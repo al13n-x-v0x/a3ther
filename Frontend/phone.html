@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#02050a" />
+<title>A3THER · Remote Control</title>
+<style>
+  :root { --cyan:#00d2ff; --orange:#ff9900; --bg:#02050a; --panel:rgba(10,18,30,.85); }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background:radial-gradient(1200px 700px at 20% -10%, rgba(0,210,255,.14), transparent 60%),
+               radial-gradient(1000px 600px at 100% 110%, rgba(255,153,0,.12), transparent 55%),
+               var(--bg);
+    color:#dde6f2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh; padding:16px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .logo {
+    width:42px; height:42px; border-radius:50%; display:grid; place-items:center;
+    background:linear-gradient(135deg, rgba(0,210,255,.25), rgba(255,153,0,.2));
+    border:1px solid rgba(0,210,255,.55); box-shadow:0 0 18px rgba(0,210,255,.35);
+    font-weight:800; font-size:20px; color:var(--cyan); letter-spacing:1px;
+  }
+  h1 { font-size:20px; letter-spacing:2px; }
+  h1 small { display:block; font-size:10.5px; color:#7b8aa0; letter-spacing:1px; font-weight:500; }
+  #statusbar {
+    display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:10px;
+    border:1px solid rgba(120,140,170,.25); background:var(--panel); font-size:12px; margin-bottom:16px;
+  }
+  #dot { width:9px; height:9px; border-radius:50%; background:#5e6a7e; box-shadow:0 0 8px currentColor; }
+  #dot.on { background:var(--cyan); color:var(--cyan); }
+  #dot.off { background:var(--orange); color:var(--orange); }
+  #meshstat { margin-left:auto; color:#7b8aa0; font-size:11px; }
+  section { margin-bottom:16px; }
+  h2 { font-size:11px; letter-spacing:2px; color:#7b8aa0; margin-bottom:9px; font-weight:600; }
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; }
+  button.cmd {
+    border:1px solid rgba(0,210,255,.3); background:var(--panel); color:#e8f2ff;
+    padding:14px 8px; border-radius:12px; font-size:12.5px; font-weight:600;
+    display:flex; flex-direction:column; align-items:center; gap:6px; letter-spacing:.5px;
+    transition:transform .12s ease, border-color .2s, box-shadow .2s; cursor:pointer;
+  }
+  button.cmd:active { transform:scale(.95); }
+  button.cmd:hover { border-color:var(--cyan); box-shadow:0 0 14px rgba(0,210,255,.25); }
+  button.cmd .ic { font-size:20px; }
+  button.cmd .ic.orange { color:var(--orange); }
+  button.cmd .ic.cyan { color:var(--cyan); }
+  button.cmd.wide { grid-column:1 / -1; flex-direction:row; justify-content:center; gap:8px; }
+  .custom { display:flex; gap:8px; }
+  input {
+    flex:1; background:var(--panel); border:1px solid rgba(120,140,170,.3); color:#e8f2ff;
+    border-radius:10px; padding:12px 12px; font-size:13px; outline:none; min-width:0;
+  }
+  input:focus { border-color:var(--cyan); }
+  input::placeholder { color:#5e6a7e; }
+  #log {
+    background:rgba(4,8,14,.8); border:1px solid rgba(120,140,170,.18); border-radius:10px;
+    padding:10px; height:160px; overflow-y:auto; font:11px/1.6 ui-monospace,Consolas,monospace; color:#9db4cc;
+  }
+  #log .in { color:var(--cyan); }
+  #log .out { color:var(--orange); }
+  #log .sys { color:#7b8aa0; }
+  .flash-overlay {
+    position:fixed; inset:0; background:rgba(255,255,255,.92); opacity:0; pointer-events:none;
+    transition:opacity .12s ease; z-index:99;
+  }
+  .flash-overlay.go { opacity:1; }
+  .toast {
+    position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    background:rgba(10,18,30,.95); border:1px solid rgba(0,210,255,.45); color:#e8f2ff;
+    padding:10px 16px; border-radius:20px; font-size:12.5px; z-index:100; box-shadow:0 4px 24px rgba(0,0,0,.5);
+    opacity:0; transition:opacity .25s; pointer-events:none; white-space:nowrap;
+  }
+  .toast.show { opacity:1; }
+  .result-box {
+    background:rgba(4,9,16,.85); border:1px solid rgba(0,210,255,.25); border-radius:10px;
+    padding:12px; font-size:12.5px; line-height:1.5; color:#bcd4ea; min-height:18px;
+  }
+  .result-box.ok { border-color:rgba(0,255,170,.4); color:#7dffc4; }
+  .result-box.err { border-color:rgba(255,120,110,.5); color:#ff8f86; }
+  footer { margin-top:8px; text-align:center; font-size:10px; color:#5e6a7e; letter-spacing:1px; }
+</style>
+</head>
+<body>
+  <div class="flash-overlay" id="flash"></div>
+  <header>
+    <div class="logo">A</div>
+    <h1>A.3.T.H.E.R.<small>REMOTE CONTROL NODE</small></h1>
+  </header>
+
+  <div id="statusbar">
+    <span id="dot"></span>
+    <span id="statustext">CONNECTING…</span>
+    <span id="meshstat"></span>
+  </div>
+
+  <section>
+    <h2>CONTROL THIS LAPTOP</h2>
+    <div class="custom">
+      <input id="app-input" type="text" placeholder="App to open — e.g. notepad, spotify, chrome" autocomplete="off" />
+      <button class="cmd wide" id="open-app-btn" style="width:auto"><span class="ic cyan">🚀</span>Open App</button>
+    </div>
+    <div class="custom">
+      <input id="type-input" type="text" placeholder="Text to type on the laptop" autocomplete="off" />
+      <button class="cmd wide" id="type-btn" style="width:auto"><span class="ic cyan">⌨</span>Type</button>
+    </div>
+    <div class="grid">
+      <button class="cmd" data-cmd="close_app"><span class="ic orange">✖</span>Close App</button>
+      <button class="cmd" data-cmd="screenshot"><span class="ic cyan">📸</span>Laptop Shot</button>
+      <button class="cmd" data-cmd="flash_screen"><span class="ic cyan">⚡</span>Flash Laptop</button>
+      <button class="cmd" data-cmd="push_notification" data-title="A3THER" data-body="Hello from your phone!"><span class="ic orange">🔔</span>Notify Laptop</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>SYSTEM</h2>
+    <div class="grid">
+      <button class="cmd" data-cmd="unlock_interface"><span class="ic cyan">🔓</span>Wake</button>
+      <button class="cmd" data-cmd="system_sleep"><span class="ic orange">🌙</span>Sleep</button>
+      <button class="cmd" data-cmd="initialize_diagnostic"><span class="ic cyan">⚙</span>Diagnostics</button>
+      <button class="cmd" data-cmd="android_control" data-params="action=screenshot"><span class="ic orange">📷</span>Android Shot</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>RESULT</h2>
+    <div id="result" class="result-box">—</div>
+  </section>
+
+  <section>
+    <h2>EVENT STREAM</h2>
+    <div id="log"></div>
+  </section>
+
+  <footer>A3THER MESH NODE · SAME WI-FI REQUIRED</footer>
+  <div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+  var kind = "laptop";  // default: a real machine; phones/tablets override below
+  var ua = navigator.userAgent || "";
+  if (/iphone|ipod/i.test(ua)) kind = "iphone";
+  else if (/ipad/i.test(ua) || (/(macintosh|mac os x)/i.test(ua) && navigator.maxTouchPoints > 1)) kind = "ipad";
+  else if (/android/i.test(ua)) kind = "android";
+
+  var name = (navigator.platform && /iphone|ipad|mac/i.test(navigator.platform) && navigator.maxTouchPoints > 1)
+    ? "iPhone" : kind === "android" ? "Android" : "Web console";
+
+  var ws = null, connected = false, nodeId = "—", timer = null, toastTimer = null;
+
+  function log(text, cls) {
+    var el = $("#log");
+    var line = document.createElement("div");
+    line.className = cls || "sys";
+    var t = new Date();
+    line.textContent = "[" + String(t.getHours()).padStart(2, "0") + ":" +
+      String(t.getMinutes()).padStart(2, "0") + ":" + String(t.getSeconds()).padStart(2, "0") + "] " + text;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+    if (el.children.length > 80) el.removeChild(el.firstChild);
+  }
+
+  function toast(text) {
+    var el = $("#toast");
+    el.textContent = text;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2400);
+  }
+
+  function setStatus(on, text) {
+    $("#dot").className = on ? "on" : (connected ? "" : "off");
+    $("#statustext").textContent = text;
+  }
+
+  function connect() {
+    var proto = location.protocol === "https:" ? "wss" : "ws";
+    try { ws = new WebSocket(proto + "://" + location.host + "/ws/mesh?kind=" + kind + "&name=" + encodeURIComponent(name)); }
+    catch (e) { schedule(); return; }
+    ws.onopen = function () {
+      connected = true;
+      setStatus(true, "CONNECTED — " + kind.toUpperCase());
+      log("Joined mesh as " + name + " (" + kind + ")", "sys");
+      try { ws.send(JSON.stringify({ type: "state", capabilities: ["notify", "flash", "control"] })); } catch (e) {}
+    };
+    ws.onmessage = function (ev) {
+      var m;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (!m) return;
+      // Wire commands arrive as {command:…} WITHOUT a "type" key — derive it
+      // so commands are never dropped (only control frames carry a type).
+      var type = m.type || (m.command ? "command" : "");
+      if (type === "welcome") {
+        nodeId = m.node_id || nodeId;
+        $("#meshstat").textContent = "NODE " + nodeId.slice(0, 6).toUpperCase() + " · MESH " + (m.mesh_size != null ? m.mesh_size : "?");
+        log("Welcome — node " + nodeId + " · mesh of " + m.mesh_size, "sys");
+      } else if (type === "ping") {
+        try { ws.send(JSON.stringify({ type: "heartbeat" })); } catch (e) {}
+      } else if (type === "terminate" || m.command === "terminate") {
+        log("IN  TERMINATE order — clearing local tasks", "out");
+      } else if (type === "command") {
+        var cmd = (m.command || "").toLowerCase();
+        var p = m.params || {};
+        log("IN  " + cmd + (m.params ? " " + JSON.stringify(m.params) : ""), "in");
+        toast("A3THER → " + cmd.toUpperCase());
+        if (cmd === "flash_screen" || (p.ios_action === "flash")) {
+          var f = $("#flash");
+          f.classList.add("go");
+          setTimeout(function () { f.classList.remove("go"); }, 260);
+        }
+        if (cmd === "push_notification") {
+          if ("vibrate" in navigator) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
+        }
+      }
+    };
+    ws.onclose = function () { connected = false; setStatus(false, "DISCONNECTED — RETRYING"); log("Link lost — retrying…", "sys"); schedule(); };
+    ws.onerror = function () { /* onclose handles retry */ };
+  }
+
+  function schedule() { clearTimeout(timer); timer = setTimeout(connect, 4000); }
+
+  function showResult(text, ok) {
+    var el = $("#result");
+    if (!el) return;
+    el.textContent = text;
+    el.className = "result-box" + (ok === true ? " ok" : ok === false ? " err" : "");
+  }
+
+  function fire(cmd, params) {
+    params = params || {};
+    var body = { command: cmd, params: params, source: "phone/" + kind };
+    log("OUT " + cmd + " " + JSON.stringify(params), "out");
+    showResult(cmd.toUpperCase() + "…", null);
+    fetch("/api/sync/broadcast", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j && j.error) { showResult("✘ " + j.error, false); toast("Error"); log("ERR " + j.error, "out"); return; }
+      // Show what the laptop actually did (the host's local hook result).
+      var locals = (j && j.local_results) || [];
+      var host = null;
+      for (var i = 0; i < locals.length; i++) {
+        if (locals[i] && (locals[i].ok === true || locals[i].ok === false)) { host = locals[i]; break; }
+      }
+      var msg = "";
+      if (host) {
+        msg = String(host.detail || "done");
+        showResult((host.ok ? "✔ " : "✘ ") + msg, host.ok);
+      } else {
+        msg = cmd.toUpperCase() + " sent to " + (j.targets || 0) + " node(s)";
+        showResult("✔ " + msg, true);
+      }
+      toast(msg.slice(0, 90));
+      log("RESULT " + msg, "sys");
+    }).catch(function () { showResult("✘ Backend unreachable", false); toast("Backend unreachable"); log("ERR backend unreachable", "out"); });
+  }
+
+  document.querySelectorAll("button.cmd[data-cmd]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var cmd = btn.getAttribute("data-cmd");
+      var params = {};
+      var raw = (btn.getAttribute("data-params") || "").split("&").filter(Boolean);
+      raw.forEach(function (kv) {
+        var i = kv.indexOf("=");
+        if (i > 0) params[kv.slice(0, i)] = kv.slice(i + 1);
+        else params[kv] = true;
+      });
+      var title = btn.getAttribute("data-title"), body = btn.getAttribute("data-body");
+      if (cmd === "push_notification") { params.title = title || "A.3.T.H.E.R."; params.body = body || "Command from your phone."; }
+      fire(cmd, params);
+    });
+  });
+
+  function openApp() {
+    var app = $("#app-input").value.trim();
+    if (!app) { showResult("✘ Type an app name first (e.g. notepad)", false); return; }
+    fire("open_app", { app: app });
+    $("#app-input").value = "";
+  }
+  $("#open-app-btn").addEventListener("click", openApp);
+  $("#app-input").addEventListener("keydown", function (e) { if (e.key === "Enter") openApp(); });
+
+  function typeOnLaptop() {
+    var text = $("#type-input").value;
+    if (!text) { showResult("✘ Type something to send first", false); return; }
+    fire("type_text", { text: text });
+    $("#type-input").value = "";
+  }
+  $("#type-btn").addEventListener("click", typeOnLaptop);
+  $("#type-input").addEventListener("keydown", function (e) { if (e.key === "Enter") typeOnLaptop(); });
+
+  log("A3THER phone control (" + kind + ")", "sys");
+  connect();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#02050a" />
+  <meta name="description" content="A.3.T.H.E.R. — Adaptive 3rd-generation Technology for Heuristic Execution & Research" />
+  <title>A.3.T.H.E.R. — AL13N Industries</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="background" aria-hidden="true"><span class="aurora"></span><span class="split-seam"></span></div>
+
+  <div id="app">
+    <!-- ================= TOP HUD ================= -->
+    <header id="topbar">
+      <div id="branding">
+        <div id="logo" aria-label="AL13N Industries logo"><span>A</span></div>
+        <div id="title">
+          <p class="eyebrow">MADE BY AL13N INDUSTRIES</p>
+          <h1>A.3.T.H.E.R.</h1>
+          <p>Adaptive 3rd-generation Technology for Heuristic Execution & Research</p>
+        </div>
+      </div>
+
+      <section id="top-status">
+        <div id="model-status" class="status-block">
+          <h3>AI MODEL</h3>
+          <span id="model-status-value">ONLINE</span>
+        </div>
+        <div id="memory-status" class="status-block">
+          <h3>MEMORY</h3>
+          <span id="memory-core-value">128 TB</span>
+        </div>
+        <div id="response-status" class="status-block">
+          <h3>RESPONSE</h3>
+          <span id="response-value">0.023s</span>
+        </div>
+        <div id="live-badge" class="status-block live-badge">
+          <h3>DATA LINK</h3>
+          <span id="live-badge-text">LINKING…</span>
+        </div>
+        <div id="clock" class="status-block">
+          <h3>TIME</h3>
+          <div class="clock-wrap">
+            <span id="clock-time">00:00:00</span>
+            <small id="clock-date">FRIDAY, MAY 24 2024</small>
+          </div>
+        </div>
+      </section>
+
+      <nav id="top-navigation">
+        <button id="nav-dashboard" class="active" data-panel="dashboard" type="button"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button>
+        <button id="nav-devices" data-panel="devices" type="button"><i class="fa-solid fa-network-wired"></i><span>Devices</span></button>
+        <button id="nav-files" data-panel="files" type="button"><i class="fa-solid fa-folder-tree"></i><span>Files</span></button>
+        <button id="nav-automation" data-panel="automation" type="button"><i class="fa-solid fa-robot"></i><span>Automation</span></button>
+        <button id="nav-terminal" data-panel="terminal" type="button"><i class="fa-solid fa-terminal"></i><span>Terminal</span></button>
+        <button id="nav-voice" data-panel="voice" type="button"><i class="fa-solid fa-microphone-lines"></i><span>Voice</span></button>
+        <button id="nav-ai" data-panel="ai" type="button"><i class="fa-solid fa-globe"></i><span>AI Core</span></button>
+        <button id="nav-control" data-panel="control" type="button"><i class="fa-solid fa-mobile-screen-button"></i><span>Control</span></button>
+        <button id="nav-sites" data-panel="sites" type="button"><i class="fa-solid fa-code"></i><span>Sites</span></button>
+        <button id="nav-settings" data-panel="settings" type="button"><i class="fa-solid fa-sliders"></i><span>Settings</span></button>
+      </nav>
+    </header>
+
+    <!-- ================= MAIN DASHBOARD ================= -->
+    <main id="dashboard">
+
+      <!-- ========== LEFT HUD ========== -->
+      <aside id="left-panel">
+        <section id="system-card" class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">01 / TELEMETRY</span>
+              <h2>System Status</h2>
+            </div>
+            <span class="status-pill ok">LIVE</span>
+          </div>
+
+          <div id="cpu-card" class="metric-card" data-metric="cpu">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>23%</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>CPU USAGE</span><strong>i7-13700K</strong></div>
+              <div class="metric-bar"><span data-bar style="width:23%"></span></div>
+              <canvas class="metric-sparkline" data-spark width="60" height="20"></canvas>
+            </div>
+          </div>
+
+          <div id="gpu-card" class="metric-card accent-orange" data-metric="gpu">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>67%</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>GPU USAGE</span><strong>RTX 4070 Ti</strong></div>
+              <div class="metric-bar"><span data-bar style="width:67%"></span></div>
+              <canvas class="metric-sparkline" data-spark width="60" height="20"></canvas>
+            </div>
+          </div>
+
+          <div id="ram-card" class="metric-card" data-metric="ram">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>45%</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>RAM USAGE</span><strong>32 GB DDR5</strong></div>
+              <div class="metric-bar"><span data-bar style="width:45%"></span></div>
+              <canvas class="metric-sparkline" data-spark width="60" height="20"></canvas>
+            </div>
+          </div>
+
+          <div id="storage-card" class="metric-card" data-metric="storage">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>52%</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>STORAGE</span><strong>2.1 TB / 4.0 TB</strong></div>
+              <div class="metric-bar"><span data-bar style="width:52%"></span></div>
+            </div>
+          </div>
+
+          <div id="network-card" class="metric-card" data-metric="network">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>52%</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>NETWORK</span><strong>124.6 Mbps</strong></div>
+              <div class="metric-bar"><span data-bar style="width:52%"></span></div>
+              <p class="metric-note">↓ 124.6 · ↑ 48.3 Mbps</p>
+            </div>
+          </div>
+
+          <div id="temperature-card" class="metric-card accent-orange" data-metric="temp">
+            <div class="metric-gauge">
+              <svg viewBox="0 0 120 120">
+                <circle class="g-track" cx="60" cy="60" r="50"></circle>
+                <circle class="g-fill" cx="60" cy="60" r="50" data-fill></circle>
+              </svg>
+              <span class="metric-value" data-value>61°C</span>
+            </div>
+            <div class="metric-copy">
+              <div class="metric-heading"><span>SYSTEM TEMP</span><strong>NORMAL</strong></div>
+              <div class="metric-bar"><span data-bar style="width:61%"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="ai-card" class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">02 / INTELLIGENCE</span>
+              <h2>AI Core Status</h2>
+            </div>
+            <span class="status-pill ok">ONLINE</span>
+          </div>
+          <div class="ai-status-grid">
+            <article class="ai-status-row"><span class="ai-status-icon"><i class="fa-solid fa-microchip"></i></span><div><strong>A.3.T.H.E.R. CORE</strong><span id="ai-row-core">ONLINE</span></div></article>
+            <article class="ai-status-row"><span class="ai-status-icon"><i class="fa-solid fa-share-nodes"></i></span><div><strong>NEURAL NETWORK</strong><span id="ai-row-neural">ACTIVE</span></div></article>
+            <article class="ai-status-row"><span class="ai-status-icon"><i class="fa-solid fa-lightbulb"></i></span><div><strong>THINKING ENGINE</strong><span id="ai-row-thinking">OPTIMAL</span></div></article>
+            <article class="ai-status-row"><span class="ai-status-icon"><i class="fa-solid fa-layer-group"></i></span><div><strong>HEURISTIC MODULES</strong><span id="ai-row-heuristic">128 / 128</span></div></article>
+          </div>
+        </section>
+
+        <section id="console-card" class="panel panel-grow">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">03 / EVENT STREAM</span>
+              <h2>Live Terminal</h2>
+            </div>
+            <div class="console-actions">
+              <button id="clear-console" type="button" title="Clear terminal"><i class="fa-solid fa-trash"></i></button>
+              <button id="export-console" type="button" title="Export transcript"><i class="fa-solid fa-file-export"></i></button>
+            </div>
+          </div>
+          <div id="console-output" aria-live="polite"></div>
+          <label class="console-command-row" for="console-input">
+            <span>C:\A3THER></span>
+            <input id="console-input" type="text" placeholder="type 'help' …" autocomplete="off" spellcheck="false" />
+          </label>
+        </section>
+      </aside>
+
+      <!-- ========== CENTER HUD ========== -->
+      <section id="center-panel">
+        <section id="ai-core" class="panel">
+          <div class="core-top-strip">
+            <article class="core-stat"><i class="fa-solid fa-atom"></i><div><span>AI MODEL</span><strong>A.3.T.H.E.R. v3.0</strong><small>ONLINE</small></div></article>
+            <article class="core-stat"><i class="fa-solid fa-database"></i><div><span>MEMORY CORE</span><strong id="core-memory">128 TB</strong><small>ACTIVE</small></div></article>
+            <article class="core-stat"><i class="fa-solid fa-chart-line"></i><div><span>LEARNING RATE</span><strong id="core-learning">98.7%</strong><small>OPTIMAL</small></div></article>
+            <article class="core-stat"><i class="fa-solid fa-stopwatch"></i><div><span>RESPONSE TIME</span><strong id="core-response">0.023s</strong><small>EXCELLENT</small></div></article>
+          </div>
+
+          <div class="globe-stage">
+            <canvas id="globe-canvas" aria-label="A.3.T.H.E.R. global network core"></canvas>
+            <div class="globe-core-label"><span>A.3.T.H.E.R.</span><strong>ADAPTIVE AI CORE</strong></div>
+            <div class="globe-caption">
+              <span class="globe-caption-title">GLOBAL NETWORK MAP</span>
+              <span class="globe-caption-sub">0 DEVICES CONNECTED</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="voice-panel" class="panel">
+          <article class="voice-side-card">
+            <div class="panel-header compact"><div><span class="panel-kicker">VOICE STATUS</span><h2 id="voice-title">Listening</h2></div></div>
+            <div id="waveform" aria-hidden="true"></div>
+          </article>
+          <div class="voice-core">
+            <button id="microphone" type="button" aria-label="Activate voice assistant"><i class="fa-solid fa-microphone"></i></button>
+            <div id="voice-status"><strong>A.3.T.H.E.R. CORE</strong><span id="voice-status-text">READY FOR COMMAND</span></div>
+          </div>
+          <button id="gemini-live-btn" type="button" aria-pressed="false" title="Continuous voice conversation — no wake word needed between turns"><i class="fa-solid fa-bolt"></i> <span>GEMINI LIVE OFF</span></button>
+          <div class="ai-voice-row">
+            <input id="ai-voice-input" type="text" placeholder="Gemini Live — ask A3THER, it speaks the reply…" autocomplete="off" spellcheck="false" />
+            <button id="ai-voice-send" type="button" aria-label="Send to AI voice"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+          <div class="ai-voice-reply" id="ai-voice-reply"></div>
+          <article class="voice-side-card system-health-card">
+            <div class="panel-header compact"><div><span class="panel-kicker">SYSTEM HEALTH</span><h2>Operational</h2></div></div>
+            <div id="health-dots" class="health-dots" aria-hidden="true"></div>
+            <p>ALL SYSTEMS OPERATIONAL</p>
+          </article>
+        </section>
+
+        <section id="sites-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">WEBSITE MAKER</span><h2>Generate a 3D Site</h2></div>
+            <span class="status-pill accent-orange">AI</span>
+          </div>
+          <div class="sites-form">
+            <input id="site-desc" type="text" placeholder="Describe the site — e.g. a neon portfolio for a DJ…" autocomplete="off" />
+            <div class="sites-form-row">
+              <input id="site-name" type="text" placeholder="Site name (optional)" autocomplete="off" />
+              <select id="site-theme" title="Theme">
+                <option value="">Auto theme</option>
+                <option value="neon">Neon</option>
+                <option value="cyber">Cyberpunk</option>
+                <option value="ocean">Ocean</option>
+                <option value="ember">Ember</option>
+              </select>
+              <button id="site-generate" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
+            </div>
+          </div>
+          <div class="site-result" id="site-result"></div>
+          <div class="panel-header compact" style="margin-top:10px"><div><span class="panel-kicker">GENERATED SITES</span><h2>Library</h2></div></div>
+          <div class="site-list" id="site-list"></div>
+        </section>
+      </section>
+
+      <!-- ========== RIGHT HUD ========== -->
+      <aside id="right-panel">
+        <section id="weather-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">04 / ENVIRONMENT</span><h2>Environment</h2></div>
+            <span class="status-pill">LIVE</span>
+          </div>
+          <div class="weather-primary">
+            <div class="weather-icon"><i class="fa-solid fa-cloud-sun"></i></div>
+            <div class="weather-temp">
+              <span id="weather-city">NEW YORK, USA</span>
+              <strong id="weather-temp">22°C</strong>
+              <small>PARTLY CLOUDY</small>
+            </div>
+          </div>
+          <div class="weather-details">
+            <div><span>HUMIDITY</span><strong>62%</strong></div>
+            <div><span>WIND</span><strong>12 km/h</strong></div>
+            <div><span>PRESSURE</span><strong>1012 hPa</strong></div>
+            <div><span>VISIBILITY</span><strong>16 km</strong></div>
+            <div><span>UV INDEX</span><strong>3</strong></div>
+          </div>
+        </section>
+
+        <section id="calendar-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">05 / SCHEDULE</span><h2>Calendar</h2></div>
+            <button class="icon-button" type="button" aria-label="Open calendar"><i class="fa-solid fa-calendar-days"></i></button>
+          </div>
+          <div id="calendar-body"></div>
+        </section>
+
+        <section id="devices-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">06 / NETWORK</span><h2>Connected Devices</h2></div>
+            <div class="panel-header-actions">
+              <button id="rescan-devices" class="icon-button" type="button" title="Rescan Bluetooth + LAN"><i class="fa-solid fa-rotate"></i></button>
+              <span class="status-pill ok" id="device-count-pill">SCANNING…</span>
+            </div>
+          </div>
+          <div class="device-list" id="device-list"></div>
+          <p class="device-source-note" id="device-source-note"></p>
+          <button class="panel-footer-button" id="view-all-devices" type="button">VIEW ALL DEVICES</button>
+        </section>
+
+        <section id="notifications-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">07 / ALERTS</span><h2>Notifications</h2></div>
+            <span class="status-pill accent-orange">3 NEW</span>
+          </div>
+          <div class="notification-list" id="notification-list"></div>
+          <button class="panel-footer-button" type="button">VIEW ALL</button>
+        </section>
+
+        <section id="predictions-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">08 / PREDICTIONS</span><h2>AI Predictor</h2></div>
+            <span class="status-pill" id="predict-pill">LEARNING</span>
+          </div>
+          <div id="predict-headline" class="predict-headline">
+            <i class="fa-solid fa-brain"></i>
+            <div><strong>GATHERING TELEMETRY…</strong><span>Give the predictor a minute of live data.</span></div>
+          </div>
+          <div class="predict-list" id="predict-list"></div>
+          <button class="panel-footer-button" id="predict-refresh" type="button">REFRESH FORECAST</button>
+        </section>
+
+        <section id="studio-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">09 / VIDEO STUDIO</span><h2>AI Video Editor</h2></div>
+            <span class="status-pill accent-orange" id="video-pill">READY</span>
+          </div>
+          <div class="studio-grid">
+            <label>Style<select id="video-style">
+              <option value="tiktok_intense" selected>TikTok Intense</option>
+              <option value="anime">Anime</option>
+              <option value="movie_trailer">Movie Trailer</option>
+              <option value="aesthetic">Aesthetic</option>
+            </select></label>
+            <label>Source folder<small>clips + images (a music file = background track)</small><input id="video-dir" type="text" placeholder="C:\Users\You\Videos\clips" autocomplete="off" spellcheck="false" /></label>
+            <label>Title text<small>burned onto the edit (optional)</small><input id="video-title" type="text" placeholder="EPIC EDIT" maxlength="60" autocomplete="off" spellcheck="false" /></label>
+          </div>
+          <button class="panel-footer-button" id="video-render" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> RENDER EDIT</button>
+          <div class="video-status" id="video-status">Pick a folder with 2+ clips/images and hit RENDER.</div>
+          <div class="video-list" id="video-list"></div>
+
+          <div class="clips-divider"><span>INTERNET CLIPS — the TikTok genre</span></div>
+          <div class="studio-grid">
+            <label>Vibe / style of edits<small>anime edits · sigma · movie edits · tiktok edits</small><input id="clips-query" type="text" placeholder="anime edit" autocomplete="off" spellcheck="false" /></label>
+            <label>Clips to fetch<select id="clips-count">
+              <option value="4">4 clips</option>
+              <option value="6" selected>6 clips</option>
+              <option value="8">8 clips</option>
+              <option value="10">10 clips</option>
+            </select></label>
+            <label>Edit style<select id="clips-style">
+              <option value="tiktok_intense" selected>TikTok Intense</option>
+              <option value="anime">Anime</option>
+              <option value="movie_trailer">Movie Trailer</option>
+              <option value="aesthetic">Aesthetic</option>
+            </select></label>
+          </div>
+          <button class="panel-footer-button" id="clips-render" type="button"><i class="fa-solid fa-globe"></i> FETCH BEST CLIPS + RENDER</button>
+          <div class="clips-status" id="clips-status">Give it a vibe — it pulls the best clips from the internet, cuts them like a pro edit, and mixes in your music.</div>
+        </section>
+      </aside>
+
+      <!-- ============ 10 / CONTROL PHONE ============ -->
+      <section id="control-card" class="panel panel-wide">
+        <div class="panel-header">
+          <div><span class="panel-kicker">10 / CONTROL PHONE</span><h2>Device Screens</h2></div>
+          <div class="panel-header-actions">
+            <button id="control-refresh" class="icon-button" type="button" title="Rescan devices"><i class="fa-solid fa-rotate"></i></button>
+            <span class="status-pill ok" id="control-pill">SCANNING…</span>
+          </div>
+        </div>
+        <div class="control-grid" id="control-grid"></div>
+        <p class="device-source-note" id="control-note">
+          Live screens for Android over <strong>USB / WiFi</strong>, this laptop, and mesh clients
+          (phones/laptops joined over <strong>internet</strong>). Click a screen to open live view + controls.
+        </p>
+      </section>
+    </main>
+
+    <!-- ================= BOTTOM DOCK ================= -->
+    <footer id="dock">
+      <button class="dock-item dock-active" type="button" data-panel="system"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button>
+      <button class="dock-item" type="button" data-panel="ai"><i class="fa-solid fa-microchip"></i><span>Devices</span></button>
+      <button class="dock-item" type="button" data-panel="files"><i class="fa-solid fa-folder-tree"></i><span>Files</span></button>
+      <button class="dock-item" type="button" data-panel="automation"><i class="fa-solid fa-robot"></i><span>Automation</span></button>
+      <button class="dock-item dock-core" type="button" data-panel="core"><i class="fa-solid fa-atom"></i><span>A.3.T.H.E.R.</span></button>
+      <button class="dock-item" type="button" data-panel="terminal"><i class="fa-solid fa-terminal"></i><span>Terminal</span></button>
+      <button class="dock-item" type="button" data-panel="voice"><i class="fa-solid fa-microphone-lines"></i><span>Voice</span></button>
+      <button class="dock-item" type="button" data-panel="weather"><i class="fa-solid fa-cloud-sun"></i><span>Weather</span></button>
+      <button class="dock-item" type="button" data-panel="settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></button>
+    </footer>
+  </div>
+
+  <noscript><div class="noscript-warning">JavaScript is disabled. The interface can still display, but live widgets will not update.</div></noscript>
+
+  <div id="overlay-root"></div>
+  <script src="script.js?v=20"></script>
+</body>
+</html>

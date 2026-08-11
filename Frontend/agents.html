@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#02050a" />
+  <title>A.3.T.H.E.R — Agent Swarm Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="agents.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><span>A</span></div>
+      <div>
+        <p class="eyebrow">A.3.T.H.E.R // MULTI-AGENT SWARM</p>
+        <h1>Agent Swarm Console</h1>
+        <p class="sub">Supervisor · Code · Research · Automation · Mail — live hand-off stream</p>
+      </div>
+    </div>
+    <div class="top-status">
+      <div class="status-block"><h3>AGENTS</h3><span id="stat-agents">—</span></div>
+      <div class="status-block"><h3>EVENTS</h3><span id="stat-events">0</span></div>
+      <a class="back-link" href="../index.html"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel commander">
+      <div class="panel-head">
+        <div><span class="kicker">COMMANDER</span><h2>Dispatch a Task</h2></div>
+      </div>
+      <div class="dispatch-row">
+        <input id="task-input" type="text" placeholder="e.g. Research open-source email libraries, then write a test script" autocomplete="off" spellcheck="false" />
+        <button class="btn primary" id="task-go" type="button"><i class="fa-solid fa-satellite-dish"></i> Route</button>
+      </div>
+      <p class="hint">Complex tasks are decomposed into steps and routed to specialist agents. Transfers appear live below.</p>
+      <div id="plan-panel" class="plan hidden"></div>
+    </section>
+
+    <section class="panel console-panel">
+      <div class="panel-head">
+        <div><span class="kicker">EVENT STREAM</span><h2>Swarm Terminal</h2></div>
+        <button class="icon-btn" id="clear-console" type="button" title="Clear"><i class="fa-solid fa-trash"></i></button>
+      </div>
+      <div id="console-output" class="console"></div>
+    </section>
+  </main>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script src="agents.js"></script>
+</body>
+</html>
