@@ -1,0 +1,20 @@
+{
+  "name": "system-probe",
+  "version": "1.0.0",
+  "description": "Live CPU, RAM, disk and battery telemetry from the host machine.",
+  "author": "AL13N Industries",
+  "type": "python",
+  "entry": "plugin.py",
+  "capabilities": [
+    {
+      "name": "probe_system",
+      "description": "Return CPU, RAM, disk and battery statistics as text."
+    },
+    {
+      "name": "probe_cpu",
+      "description": "Return the current CPU load percentage."
+    }
+  ],
+  "dependencies": ["psutil"],
+  "enabled": true
+}
