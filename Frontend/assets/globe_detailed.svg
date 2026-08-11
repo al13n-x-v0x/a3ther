@@ -1,0 +1,27 @@
+<svg viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <radialGradient id="gd" cx="40%" cy="20%">
+      <stop offset="0%" stop-color="#00e0ff" stop-opacity="1"/>
+      <stop offset="45%" stop-color="#007bb3" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softglow"><feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#softglow)">
+    <circle cx="600" cy="600" r="520" fill="url(#gd)" />
+  </g>
+  <g stroke="#00d2ff" stroke-opacity="0.18" stroke-width="1">
+    <path d="M600,80 A520,520 0 0,1 600,1120" fill="none"/>
+    <path d="M600,80 A520,520 0 0,0 600,1120" fill="none"/>
+    <path d="M120,600 A420,420 0 0,1 1080,600" fill="none"/>
+    <path d="M40,440 A560,560 0 0,1 1160,760" fill="none"/>
+    <path d="M40,760 A560,560 0 0,1 1160,440" fill="none"/>
+  </g>
+  <g fill="#00d2ff" fill-opacity="0.96">
+    <circle cx="780" cy="360" r="7"/>
+    <circle cx="320" cy="420" r="7"/>
+    <circle cx="480" cy="700" r="7"/>
+    <circle cx="640" cy="560" r="7"/>
+    <circle cx="260" cy="620" r="7"/>
+  </g>
+</svg>

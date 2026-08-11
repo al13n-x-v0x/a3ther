@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A.3.T.H.E.R — Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: "class", theme: { extend: { colors: { aether: { 500: "#3ddcff", 600: "#0ea5e9", 700: "#0369a1" } } } } };
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+
+  <!-- ============ Sidebar ============ -->
+  <button data-drawer-target="hub-sidebar" data-drawer-toggle="hub-sidebar" aria-controls="hub-sidebar" type="button"
+          class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-slate-400 rounded-lg lg:hidden hover:bg-slate-800 focus:outline-none">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+  </button>
+
+  <aside id="hub-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full lg:translate-x-0 bg-slate-900 border-r border-slate-800" aria-label="Sidebar">
+    <div class="h-full px-3 py-4 overflow-y-auto">
+      <a href="/" class="flex items-center mb-6 ms-1">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-aether-500 to-aether-700 font-bold text-slate-950 me-3">A</span>
+        <span class="text-lg font-semibold tracking-widest">A.3.T.H.E.R <span class="text-aether-500">HUB</span></span>
+      </a>
+      <ul class="space-y-2 font-medium">
+        <li><a href="/" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">Dashboard</span></a></li>
+        <li><a href="/plugins" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">Extensions Manager</span></a></li>
+        <li><a href="#engine" class="flex items-center p-2 text-aether-500 rounded-lg hover:bg-slate-800 group"><span class="ms-3">Boot Engine</span></a></li>
+        <li><a href="#servers" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">MCP Servers</span></a></li>
+        <li><a href="#tools" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">MCP Tools</span></a></li>
+        <li><a href="#catalog" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">Server Catalog</span></a></li>
+        <li><a href="#autopilot" class="flex items-center p-2 text-slate-300 rounded-lg hover:bg-slate-800 group"><span class="ms-3">Freaky-Fix Autopilot</span></a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="lg:ml-64 p-4 sm:p-6 space-y-6">
+
+    <!-- ============ Boot Engine ============ -->
+    <section id="engine" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold">Boot Engine</h2>
+          <p class="text-sm text-slate-400">Pre-flight dependency check + touch-free USB auto-unlock loop</p>
+        </div>
+        <span id="engine-pill" class="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300">BOOTING…</span>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3 mb-4" id="preflight-cards">
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-500">adb</p>
+          <p id="pre-adb" class="mt-1 text-sm font-mono text-slate-400">checking…</p>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-500">ffmpeg</p>
+          <p id="pre-ffmpeg" class="mt-1 text-sm font-mono text-slate-400">checking…</p>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-500">USB watcher</p>
+          <p id="pre-usb" class="mt-1 text-sm font-mono text-slate-400">starting…</p>
+        </div>
+      </div>
+      <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 h-56 overflow-y-auto font-mono text-xs leading-relaxed" id="engine-log">
+        <p class="text-slate-500">— engine log —</p>
+      </div>
+    </section>
+
+    <!-- ============ MCP Servers ============ -->
+    <section id="servers" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold">MCP Servers</h2>
+          <p class="text-sm text-slate-400">Connected Model Context Protocol servers — every MCP you've added</p>
+        </div>
+        <span id="servers-pill" class="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300">—</span>
+      </div>
+      <div id="servers-grid" class="grid md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- ============ MCP Tools ============ -->
+    <section id="tools" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold">MCP Tools</h2>
+          <p class="text-sm text-slate-400">Address tools as <code class="font-mono text-aether-500">server__tool</code> — the voice brain can call them with "use the … tool"</p>
+        </div>
+        <span id="tools-pill" class="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300">—</span>
+      </div>
+      <div id="tools-list" class="flex flex-wrap gap-2"></div>
+    </section>
+
+    <!-- ============ Catalog ============ -->
+    <section id="catalog" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-semibold">Server Catalog</h2>
+          <p class="text-sm text-slate-400">One-click install — npm / uv / go / git servers, plus live community indexes</p>
+        </div>
+        <div class="flex gap-2">
+          <input id="cat-search" type="text" placeholder="search servers…"
+                 class="bg-slate-950 border border-slate-700 text-sm rounded-lg px-3 py-2 placeholder-slate-500 focus:border-aether-500 focus:ring-aether-500" />
+          <select id="cat-source" class="bg-slate-950 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:border-aether-500">
+            <option value="">Curated</option>
+            <option value="punkpeye">Community · punkpeye</option>
+            <option value="wong2">Community · wong2</option>
+            <option value="official">Official Registry</option>
+          </select>
+        </div>
+      </div>
+      <div id="catalog-list" class="space-y-2"></div>
+    </section>
+
+    <!-- ============ Autopilot ============ -->
+    <section id="autopilot" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <h2 class="text-lg font-semibold mb-4">Freaky-Fix Autopilot</h2>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <input id="ap-command" type="text" placeholder="command to run, e.g. python tools/check_api.py"
+               class="flex-1 min-w-60 bg-slate-950 border border-slate-700 text-sm rounded-lg px-3 py-2 placeholder-slate-500 focus:border-aether-500" />
+        <button id="ap-run" type="button"
+                class="text-slate-950 bg-gradient-to-r from-aether-500 to-aether-600 hover:from-aether-600 hover:to-aether-700 font-medium rounded-lg text-sm px-4 py-2">
+          Run &amp; Self-Fix
+        </button>
+      </div>
+      <div id="ap-output" class="rounded-xl bg-slate-950 border border-slate-800 p-3 h-48 overflow-y-auto font-mono text-xs leading-relaxed">
+        <p class="text-slate-500">Run a command to start the loop — failures are diagnosed and patched up to 3 times.</p>
+      </div>
+    </section>
+
+    <p class="text-center text-xs text-slate-600">A.3.T.H.E.R Hub · Flowbite UI · served from the same engine as the HUD</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+  <script src="/hub/hub.js"></script>
+</body>
+</html>
