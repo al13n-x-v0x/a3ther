@@ -23,7 +23,7 @@ DEFAULTS: Dict[str, Any] = {
     "theme": ["#00D2FF", "#FF9900"],
     "theme_name": "cyan",
     "assistant_name": "A.3.T.H.E.R.",
-    "tagline": "Adaptive 3rd-generation Technology for Heuristic Execution & Research",
+    "tagline": "Adaptive 3rd-generation Technology for Heuristic Execution & Research · by AL13N Industries",
     "mode": "ai",
     "poll_ms": 3000,
     "globe": True,

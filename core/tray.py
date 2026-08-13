@@ -48,20 +48,29 @@ def available() -> bool:
 
 
 def _build_icon_image() -> object:
-    """Draw a small A3THER glyph: dark rounded square, glowing cyan 'A'."""
-    size = 64
-    img = _PIL_Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = _PIL_Draw.Draw(img)
-    # Rounded-square background.
-    draw.rounded_rectangle([2, 2, size - 2, size - 2], radius=14, fill=(5, 8, 15, 255))
-    # Glow ring.
-    draw.rounded_rectangle([4, 4, size - 4, size - 4], radius=13, outline=(0, 210, 255, 160), width=2)
-    # The 'A' — drawn as two angled bars + crossbar (Orbitron-ish feel).
-    cyan = (0, 210, 255, 255)
-    draw.line([(18, 46), (32, 14)], fill=cyan, width=5)
-    draw.line([(32, 14), (46, 46)], fill=cyan, width=5)
-    draw.line([(24, 34), (40, 34)], fill=cyan, width=4)
-    return img
+    """The real A3THER logo (assets/logo_tray.png), resized for the tray.
+
+    Falls back to a drawn cyan 'A' glyph only when the asset is missing.
+    """
+    try:
+        from core.resources import asset_path  # noqa: PLC0415
+
+        img = _PIL_Image.open(asset_path("logo_tray.png")).convert("RGBA")
+        return img.resize((64, 64), _PIL_Image.LANCZOS)
+    except Exception:  # noqa: BLE001 — fall back to the drawn glyph
+        size = 64
+        img = _PIL_Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = _PIL_Draw.Draw(img)
+        # Rounded-square background.
+        draw.rounded_rectangle([2, 2, size - 2, size - 2], radius=14, fill=(5, 8, 15, 255))
+        # Glow ring.
+        draw.rounded_rectangle([4, 4, size - 4, size - 4], radius=13, outline=(0, 210, 255, 160), width=2)
+        # The 'A' — drawn as two angled bars + crossbar (Orbitron-ish feel).
+        cyan = (0, 210, 255, 255)
+        draw.line([(18, 46), (32, 14)], fill=cyan, width=5)
+        draw.line([(32, 14), (46, 46)], fill=cyan, width=5)
+        draw.line([(24, 34), (40, 34)], fill=cyan, width=4)
+        return img
 
 
 def _dispatch(action: str) -> None:

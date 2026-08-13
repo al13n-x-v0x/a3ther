@@ -7,14 +7,13 @@ Build (from the repo root, with pyinstaller installed):
     pip install pyinstaller
     pyinstaller a3ther.spec --noconfirm
 
-Output:  dist/A3THER/A3THER.exe  (a folder — onedir mode; starts fast,
-no temp-file extraction). A single-file build is possible with
-``pyinstaller a3ther.spec --noconfirm --onefile`` — but onedir is the
-recommended default: it boots faster and is far more reliable with the
-FastAPI/uvicorn stack.
+Output:  dist/A3THER.exe  — ONE single self-contained exe (onefile mode).
+Everything (Python, deps, Vosk DLLs, the HUD, the A3THER logo) is embedded;
+the exe extracts to a temp dir at first launch. The app's own autostart and
+startup shortcuts point at this one file.
 
-The exe needs no Python and no pip: every imported dependency is bundled
-inside dist/A3THER. The only runtime requirement is a normal Windows PC
+The exe needs no Python and no pip: first run auto-installs optional voice
+deps (core/auto_deps). The only runtime requirement is a normal Windows PC
 (the HUD opens in the default browser).
 """
 
@@ -39,6 +38,7 @@ imageio_ffmpeg_datas = collect_data_files("imageio_ffmpeg")
 # Static assets that must ship inside the bundle:
 #   Frontend/  →  the HUD (index.html / style.css / script.js / phone.html)
 #                AND the Extensions dashboard (plugins.html/js/css).
+#   assets/    →  the real A3THER logo (exe icon, tray, popup, HUD favicon).
 #   config/api_keys.template.json  →  an EMPTY template, copied to
 #   config/api_keys.json in the bundle so old readers never crash.
 #
@@ -55,6 +55,10 @@ datas = [
     ("Frontend/plugins.css", "Frontend"),
     ("Frontend/hub.html", "Frontend"),
     ("Frontend/hub.js", "Frontend"),
+    ("assets/logo.png", "assets"),
+    ("assets/logo.ico", "assets"),
+    ("assets/logo_tray.png", "assets"),
+    ("assets/logo_popup.png", "assets"),
     ("config/api_keys.template.json", "config"),
 ]
 
@@ -154,8 +158,10 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name="A3THER",
     debug=False,
     bootloader_ignore_signals=False,
@@ -170,15 +176,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name="A3THER",
+    # The real A3THER logo — shows in Explorer, the taskbar and Alt+Tab.
+    icon="assets/logo.ico",
 )
