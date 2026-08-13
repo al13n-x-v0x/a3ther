@@ -2273,16 +2273,51 @@
   ========================================================= */
   const JarvisLab = {
     _ha: null,
+    _history: [],
+    _surprisePrompts: [
+      "a neon cyberpunk city at dusk, cyan rain, cinematic",
+      "an astronaut floating above a glowing ringed planet, golden light",
+      "a chrome falcon perched on a circuit board, macro detail",
+      "a cybernetic samurai in the rain, teal and orange, dramatic",
+      "a glass data-center palace inside a thundercloud",
+      "a bioluminescent forest under a purple sky, fantasy",
+      "a retro-future sports car racing through Tokyo at night",
+      "an A.I. core floating in deep space, glowing blue threads",
+      "a phoenix made of holographic light over a dark ocean",
+      "a hyper-detailed mech workshop, warm workshop lights, cinematic",
+    ],
     esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
     init() {
       const imgBtn = $("#jarvis-img-go");
       if (imgBtn) imgBtn.addEventListener("click", () => this.generate());
+      const surpriseBtn = $("#jarvis-img-surprise");
+      if (surpriseBtn) surpriseBtn.addEventListener("click", () => {
+        const input = $("#jarvis-img-prompt");
+        if (!input) return;
+        const pick = this._surprisePrompts[Math.floor(Math.random() * this._surprisePrompts.length)];
+        input.value = pick;
+        this.generate();
+      });
       const camBtn = $("#jarvis-cam-go");
       if (camBtn) camBtn.addEventListener("click", () => this.camera());
       const haBtn = $("#jarvis-ha-refresh");
       if (haBtn) haBtn.addEventListener("click", () => this.loadHa(true));
       this.status();
       this.loadHa();
+    },
+    async speak(text) {
+      if (!text) return;
+      try { await API.post("/api/voice/say", { text }); } catch (e) { /* voice optional */ }
+    },
+    _pushHistory(src) {
+      this._history.unshift(src);
+      if (this._history.length > 6) this._history.pop();
+      const box = $("#jarvis-img-history");
+      if (!box) return;
+      box.innerHTML = this._history.map((s) => `<img src="${s}" alt="" />`).join("");
+      box.querySelectorAll("img").forEach((img, i) => {
+        img.addEventListener("click", () => { const r = $("#jarvis-img-result"); if (r) r.innerHTML = `<img src="${this._history[i]}" alt="generated image" />`; });
+      });
     },
     async status() {
       const pill = $("#jarvis-pill");
@@ -2308,11 +2343,10 @@
       if (btn) btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i>`;
       if (!r) { if (box) box.innerHTML = `<span class="err">✘ Backend offline.</span>`; return; }
       if (!r.ok) { if (box) box.innerHTML = `<span class="err">✘ ${this.esc(r.error)}</span>`; return; }
-      if (box) {
-        box.innerHTML = r.url
-          ? `<img src="${r.url}" alt="generated image" />`
-          : `<img src="data:image/png;base64,${r.image_base64}" alt="generated image" />`;
-      }
+      const src = r.url || `data:image/png;base64,${r.image_base64}`;
+      if (box) box.innerHTML = `<img src="${src}" alt="generated image" />`;
+      this._pushHistory(src);
+      this.speak(`Done. Generated ${prompt.length > 60 ? prompt.slice(0, 60) + "…" : prompt}.`);
     },
     async camera() {
       const box = $("#jarvis-cam-result");
@@ -2333,6 +2367,7 @@
             ? `<div class="jarvis-answer">${this.esc(v.answer)}</div>`
             : `<div class="jarvis-answer err">${this.esc((v && v.error) || "vision unavailable")}</div>`);
         }
+        if (v && v.ok) this.speak(v.answer.slice(0, 180));
       }
       if (btn) btn.innerHTML = `<i class="fa-solid fa-camera"></i>`;
     },
