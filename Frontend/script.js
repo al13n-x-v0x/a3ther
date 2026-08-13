@@ -1153,6 +1153,24 @@
         </div>
 
         <div class="settings-section">
+          <h4>HOME ASSISTANT</h4>
+          <p class="settings-note">JARVIS integration — control your smart home from the HUD (devices by room, tap to toggle).</p>
+          <div class="settings-row">
+            <label>Server URL<small>e.g. http://192.168.1.20:8123</small></label>
+            <input class="settings-text-input" id="set-ha-url" type="text" placeholder="http://homeassistant.local:8123" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="settings-row">
+            <label>Long-lived access token<small>Home Assistant → Profile → Security → Long-lived access tokens</small></label>
+            <input class="settings-text-input" id="set-ha-token" type="password" placeholder="eyJhbGciOi…" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-ha-save"><i class="fa-solid fa-house-circle-check"></i> Save Home Assistant</button>
+            <button class="settings-btn" id="set-ha-test"><i class="fa-solid fa-plug-circle-check"></i> Test Connection</button>
+          </div>
+          <p class="settings-note" id="set-ha-status">Not configured yet.</p>
+        </div>
+
+        <div class="settings-section">
           <h4>MODE</h4>
           <p class="settings-note">Pick A3THER's persona — the accent theme, voice tone and icon follow the mode.</p>
           <div class="settings-grid" id="set-mode-grid"></div>
@@ -1182,6 +1200,10 @@
             <span class="toggle ${Settings.startup ? "on" : ""}" id="set-startup-toggle" role="switch" aria-checked="${Settings.startup}"></span>
           </div>
           <p class="settings-note" id="set-startup-status">Checking…</p>
+          <div class="settings-row">
+            <label>Speech popup<small>the talking A3THER avatar slides in (sometimes from the top, sometimes from below) and shows the words while it speaks</small></label>
+            <span class="toggle ${Settings.speech_popup ? "on" : ""}" id="set-speech-popup" role="switch" aria-checked="${Settings.speech_popup}"></span>
+          </div>
           <div class="settings-grid" style="margin-top:8px">
             <button class="settings-btn" id="set-popup-test"><i class="fa-solid fa-wand-magic-sparkles"></i> Test Quick Popup</button>
             <button class="settings-btn" id="set-popup-hotkey" type="button"><i class="fa-solid fa-keyboard"></i> Alt+F8 pops it up</button>
@@ -1584,6 +1606,45 @@
         });
       }
 
+      // Home Assistant — JARVIS smart-home integration
+      const haUrlInput = body.querySelector("#set-ha-url");
+      const haTokenInput = body.querySelector("#set-ha-token");
+      const haStatus = body.querySelector("#set-ha-status");
+      if (haUrlInput && haTokenInput) {
+        const ui0 = await API.get("/api/settings/ui");
+        if (ui0 && !ui0.error) {
+          haUrlInput.value = ui0.ha_url || "";
+          haTokenInput.value = ui0.ha_token || "";
+          haStatus.textContent = ui0.ha_url && ui0.ha_token ? "✓ Configured." : "Not configured yet.";
+        }
+        const saveHa = async () => {
+          const r = await API.post("/api/settings/ui", {
+            ha_url: (haUrlInput.value || "").trim(),
+            ha_token: (haTokenInput.value || "").trim(),
+          });
+          if (r && !r.error) {
+            haStatus.textContent = "✓ Saved.";
+            Toasts.ok("Home Assistant settings saved.");
+            JarvisLab._ha = null;
+            return true;
+          }
+          haStatus.textContent = "✘ Could not save (backend offline?).";
+          return false;
+        };
+        body.querySelector("#set-ha-save").addEventListener("click", saveHa);
+        const haTest = body.querySelector("#set-ha-test");
+        if (haTest) {
+          haTest.addEventListener("click", async () => {
+            await saveHa();
+            haStatus.textContent = "Testing…";
+            const r = await API.get("/api/jarvis/ha");
+            haStatus.textContent = r && r.ok
+              ? `✓ Connected — ${r.entities} entities (${Object.keys(r.by_domain || {}).length} domains).`
+              : `✘ ${(r && r.error) || "cannot reach Home Assistant"}`;
+          });
+        }
+      }
+
       // mode grid — real buttons from /api/modes, switch + re-theme + persist
       const modeGrid = body.querySelector("#set-mode-grid");
       const modeStatus = body.querySelector("#set-mode-status");
@@ -1714,12 +1775,24 @@
         });
       }
 
-      // Quick popup — summon the Claude-style logo overlay (same as Alt+F8)
+      // Quick popup — summon the talking avatar overlay (same as Alt+F8)
       const popupTest = body.querySelector("#set-popup-test");
       if (popupTest) {
         popupTest.addEventListener("click", async () => {
           const r = await API.post("/api/overlay/show", {});
           Toasts[!r || !r.ok ? "err" : "ok"](!r || !r.ok ? "Popup unavailable — tkinter missing?" : "Popup shown — Esc to hide.");
+        });
+      }
+      // Speech popup toggle — persist, so the avatar only appears when wanted.
+      const speechToggle = body.querySelector("#set-speech-popup");
+      if (speechToggle) {
+        speechToggle.addEventListener("click", async () => {
+          const next = !Settings.speech_popup;
+          Settings.speech_popup = next;
+          speechToggle.classList.toggle("on", next);
+          speechToggle.setAttribute("aria-checked", String(next));
+          const r = await API.post("/api/settings/ui", { speech_popup: next });
+          Toasts[!r || !r.ok ? "err" : "ok"](!r || !r.ok ? "Could not save setting." : (next ? "Speech popup enabled." : "Speech popup disabled."));
         });
       }
     }
@@ -2193,6 +2266,106 @@
       URL.revokeObjectURL(url);
       Toasts.ok("Terminal log exported.");
     }
+  };
+
+  /* =========================================================
+     JARVIS LAB — image generation, camera + vision, Home Assistant
+  ========================================================= */
+  const JarvisLab = {
+    _ha: null,
+    esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+    init() {
+      const imgBtn = $("#jarvis-img-go");
+      if (imgBtn) imgBtn.addEventListener("click", () => this.generate());
+      const camBtn = $("#jarvis-cam-go");
+      if (camBtn) camBtn.addEventListener("click", () => this.camera());
+      const haBtn = $("#jarvis-ha-refresh");
+      if (haBtn) haBtn.addEventListener("click", () => this.loadHa(true));
+      this.status();
+      this.loadHa();
+    },
+    async status() {
+      const pill = $("#jarvis-pill");
+      const r = await API.get("/api/jarvis/status");
+      if (!r) return;
+      if (!pill) return;
+      const parts = [
+        r.image_generation ? "IMAGE" : null,
+        r.camera ? "CAMERA" : null,
+        r.home_assistant ? "HOME" : null,
+      ].filter(Boolean);
+      pill.textContent = parts.length ? parts.join(" · ") : "NEEDS KEYS";
+      pill.classList.toggle("ok", parts.length > 0);
+    },
+    async generate() {
+      const prompt = ($("#jarvis-img-prompt") || {}).value ? $("#jarvis-img-prompt").value.trim() : "";
+      const box = $("#jarvis-img-result");
+      const btn = $("#jarvis-img-go");
+      if (!prompt) { if (box) box.innerHTML = `<span class="err">✘ Type a prompt first.</span>`; return; }
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+      if (box) box.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating…`;
+      const r = await API.post("/api/jarvis/image", { prompt });
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i>`;
+      if (!r) { if (box) box.innerHTML = `<span class="err">✘ Backend offline.</span>`; return; }
+      if (!r.ok) { if (box) box.innerHTML = `<span class="err">✘ ${this.esc(r.error)}</span>`; return; }
+      if (box) {
+        box.innerHTML = r.url
+          ? `<img src="${r.url}" alt="generated image" />`
+          : `<img src="data:image/png;base64,${r.image_base64}" alt="generated image" />`;
+      }
+    },
+    async camera() {
+      const box = $("#jarvis-cam-result");
+      const prompt = ($("#jarvis-vision-prompt") || {}).value ? $("#jarvis-vision-prompt").value.trim() : "";
+      const btn = $("#jarvis-cam-go");
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+      if (box) box.innerHTML = `<i class="fa-solid fa-camera fa-spin"></i> Opening camera…`;
+      const r = await API.post("/api/jarvis/camera", {});
+      if (!r) { if (box) box.innerHTML = `<span class="err">✘ Backend offline.</span>`; if (btn) btn.innerHTML = `<i class="fa-solid fa-camera"></i>`; return; }
+      if (!r.ok) { if (box) box.innerHTML = `<span class="err">✘ ${this.esc(r.error)}</span>`; if (btn) btn.innerHTML = `<i class="fa-solid fa-camera"></i>`; return; }
+      const shot = `<img src="data:image/png;base64,${r.image_base64}" alt="camera capture" />`;
+      if (box) box.innerHTML = shot;
+      if (prompt) {
+        if (box) box.innerHTML += `<div class="jarvis-thinking"><i class="fa-solid fa-brain fa-spin"></i> Looking…</div>`;
+        const v = await API.post("/api/jarvis/vision", { prompt, image_base64: r.image_base64 });
+        if (box) {
+          box.innerHTML = shot + (v && v.ok
+            ? `<div class="jarvis-answer">${this.esc(v.answer)}</div>`
+            : `<div class="jarvis-answer err">${this.esc((v && v.error) || "vision unavailable")}</div>`);
+        }
+      }
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-camera"></i>`;
+    },
+    async loadHa(force) {
+      if (this._ha && !force) return;
+      const box = $("#jarvis-ha");
+      if (box) box.innerHTML = `<i class="fa-solid fa-house-circle-check fa-spin"></i> Loading devices…`;
+      const r = await API.get("/api/jarvis/ha");
+      if (!r) { if (box) box.innerHTML = `<span class="err">✘ Backend offline.</span>`; return; }
+      if (!r.ok) { if (box) box.innerHTML = `<span class="err">✘ ${this.esc(r.error)}</span>`; this._ha = null; return; }
+      this._ha = r;
+      if (!box) return;
+      const domains = Object.entries(r.by_domain || {});
+      if (!domains.length) { box.innerHTML = "No Home Assistant entities found."; return; }
+      let html = "";
+      for (const [domain, entities] of domains) {
+        html += `<div class="ha-domain">${this.esc(domain.toUpperCase())}</div>`;
+        for (const e of entities) {
+          const on = e.state === "on" || e.state === "open" || e.state === "home";
+          html += `<button class="ha-entity ${on ? "on" : ""}" data-id="${this.esc(e.entity_id)}">
+            <span class="ha-dot"></span>${this.esc(e.name)}
+            <small>${this.esc(e.state)}</small></button>`;
+        }
+      }
+      box.innerHTML = html;
+      box.querySelectorAll(".ha-entity").forEach((b) => {
+        b.addEventListener("click", async () => {
+          const rr = await API.post("/api/jarvis/ha/toggle", { entity_id: b.dataset.id });
+          Toasts[rr && rr.ok ? "ok" : "err"](rr && rr.ok ? `${b.dataset.id} toggled` : ((rr && rr.error) || "toggle failed"));
+          this.loadHa(true);
+        });
+      });
+    },
   };
 
   /* =========================================================
@@ -3211,6 +3384,7 @@
     Mesh.init();
     Live.init();
     VideoStudio.init();
+    JarvisLab.init();
 
     // AI Predictor refresh button — bound once, never duplicated on re-opens.
     const predictRefresh = document.querySelector("#predict-refresh");

@@ -174,7 +174,9 @@ def _bootstrap_hooks() -> None:
                         "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("
                         "'A3THER').Show($toast)"
                     )
-                    subprocess.run(
+                    from core.silent import run as silent_run  # noqa: PLC0415
+
+                    silent_run(
                         ["powershell", "-NoProfile", "-Command", script],
                         timeout=10,
                     )

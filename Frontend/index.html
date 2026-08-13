@@ -386,6 +386,30 @@
           <button class="panel-footer-button" id="clips-render" type="button"><i class="fa-solid fa-globe"></i> FETCH BEST CLIPS + RENDER</button>
           <div class="clips-status" id="clips-status">Give it a vibe — it pulls the best clips from the internet, cuts them like a pro edit, and mixes in your music.</div>
         </section>
+
+        <section id="jarvis-card" class="panel">
+          <div class="panel-header">
+            <div><span class="panel-kicker">09B / JARVIS LAB</span><h2>Image · Camera · Home</h2></div>
+            <span class="status-pill" id="jarvis-pill">…</span>
+          </div>
+          <label style="display:block;margin-bottom:6px">Image generation<small>OpenAI image model — one prompt, one masterpiece</small></label>
+          <div class="studio-grid" style="grid-template-columns:1fr auto">
+            <input id="jarvis-img-prompt" type="text" placeholder="a cyberpunk city at dusk, neon cyan rain" autocomplete="off" spellcheck="false" />
+            <button class="icon-button" id="jarvis-img-go" type="button" title="Generate image"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+          </div>
+          <div class="jarvis-result" id="jarvis-img-result"></div>
+
+          <div class="clips-divider"><span>VISION — LOOK AT THE WORLD</span></div>
+          <div class="studio-grid" style="grid-template-columns:1fr auto">
+            <input id="jarvis-vision-prompt" type="text" placeholder="what do you see? describe it…" autocomplete="off" spellcheck="false" />
+            <button class="icon-button" id="jarvis-cam-go" type="button" title="Capture camera + analyze"><i class="fa-solid fa-camera"></i></button>
+          </div>
+          <div class="jarvis-result" id="jarvis-cam-result"></div>
+
+          <div class="clips-divider"><span>HOME ASSISTANT</span></div>
+          <div class="jarvis-ha" id="jarvis-ha">Not configured — add your server in Settings → Home Assistant.</div>
+          <button class="panel-footer-button" id="jarvis-ha-refresh" type="button"><i class="fa-solid fa-house-circle-check"></i> REFRESH DEVICES</button>
+        </section>
       </aside>
 
       <!-- ============ 10 / CONTROL PHONE ============ -->

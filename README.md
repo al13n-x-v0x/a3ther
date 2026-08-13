@@ -30,6 +30,54 @@ It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Gr
 | **Remote Control** | Phone app pairs over LAN/Tailscale — discover, pair, open apps, lock, plus **live screen streaming + touch/keyboard control** of the laptop from the phone, and one-command phone mirroring (scrcpy) |
 | **ScanGuard** | Double-extension & magic-byte scanner (Windows exe + Android APK) |
 | **Phone tools** | `phone.sh` + `PHONE.md` — scrcpy/ADB helpers to mirror & control your phone from the PC |
+| **JARVIS Lab** | Image generation, camera + vision, Home Assistant control, AI video editor |
+
+---
+
+## 📋 Full Feature List
+
+### 🖥 Core engine
+- Cinematic glassmorphism HUD — live telemetry, AI core, event stream, themes (cyan/orange/gold/red/…)
+- **8 modes** with real personas: `ai` · `humanoid` · `gaming` · `dev` · `chill` · `focus` · `creative` · `offline` — each changes the accent theme, icon and TTS voice
+- **LLM gateway**: local **Ollama** first, plus OpenAI / DeepSeek / Gemini / Groq / Anthropic
+- Long-term **memory** (JSON-backed, keyword search, session summaries) + memory API
+- **Plugin loader** (system-probe, web-fetch), **MCP host**, extension catalog
+- Real **actions**: open apps · web search · live weather · system monitor · browser & computer control · file controller · YouTube · send message
+- First-run setup with a provider picker (or run fully offline)
+
+### 🎙 Voice
+- Offline **speech-to-text** (Vosk) with wake word **"hey aether"** — no cloud needed
+- Natural **text-to-speech** (Edge TTS) + SAPI fallback + optional Kokoro / ElevenLabs
+- **Talking popup avatar** — glowing voice rings + live transcript while it speaks
+
+### ⌨ Desktop integration (Windows)
+- Global **hotkeys** `Alt+F1…F8` (HUD, voice, screenshot, cycle mode, lock, status, hub, popup) — rebindable, work in the background from any app
+- **System tray** icon — status tooltip, Summon / Toggle Voice / Cycle Mode / Shot / Status / Quit
+- **Quick popup** — the talking avatar that slides in from a random edge (sometimes from below, sometimes from above)
+- **Start with Windows** — real per-user registry `Run` entry, installed from Settings
+- **Background mode** — runs hidden, summon anytime (Alt+F1, tray, or popup)
+- No console/PowerShell window flashes (all subprocesses run silent)
+
+### 📱 Remote control
+- **Phone → laptop**: pair with a 6-digit code, then Status / Open apps / Lock / Screenshot / shell (opt-in)
+- **Live screen streaming** — the phone sees the laptop screen in real time (MJPEG, ~12 fps)
+- **Full touch control** — tap = click, hold = right-click, drag = mouse, scroll = wheel, double-tap = double-click, on-screen keyboard
+- **Works anywhere** — Tailscale helper (`python -m remote_dev.tailnet`) makes cross-network control one command; no port-forwarding
+- **Laptop → phone**: `phone.sh wifi` — plug in once, then full wireless mirror + control (scrcpy/ADB); also push/pull/screenshot
+- **AetherRemote.apk** — the phone app with discovery, pairing, commands, and a Screen viewer button
+
+### 🧪 JARVIS Lab
+- **Image generation** — one prompt, one image (OpenAI images API)
+- **Camera + vision** — capture the webcam, then ask a vision model what it sees
+- **Home Assistant** — list every device grouped by room/domain, tap to toggle (needs your HA server + long-lived token)
+- **AI video editor** — real OpenCV rendering: folder of clips/images → styled montage (4 styles + title card), internet clip search (yt-dlp)
+
+### 🛡 Security & tooling
+- Pairing codes → long-lived bearer tokens; every state-changing call is authenticated; shell execution is opt-in and logged
+- **ScanGuard** — double-extension & magic-byte scanner (Windows exe + Android APK)
+- Website maker, calendar, notifications, AI predictor, live devices (Bluetooth + LAN)
+- USB phone watcher with touch-free auto-unlock, broadcast mesh, video studio
+- Honest everywhere: features without their optional deps/config return clear setup instructions — never faked success
 
 ---
 
@@ -169,6 +217,8 @@ cd remote_app && briefcase build android  # or use the prebuilt AetherRemote.apk
 | ScanGuard scanner | ✅ Live (exe + APK) |
 | Laptop → phone mirroring | ✅ Live (`phone.sh wifi` via scrcpy/ADB) |
 | Video editor | ✅ Live (OpenCV renders; honest errors when deps missing) |
+| JARVIS Lab (image gen, camera+vision, Home Assistant) | ✅ Live (honest setup prompts when keys/deps missing) |
+| Silent subprocesses | ✅ Live — no console/PowerShell window flashes |
 
 See [`REMOTE.md`](REMOTE.md) for the honest remote-control roadmap.
 

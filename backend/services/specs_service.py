@@ -141,9 +141,11 @@ def _gpu_powershell_cim() -> list[dict] | None:
     if platform.system() != "Windows":
         return None
     try:
-        import subprocess
+        import subprocess  # noqa: PLC0415
 
-        out = subprocess.run(
+        from core.silent import run as silent_run  # noqa: PLC0415
+
+        out = silent_run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command",
              "(Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name)"],
             capture_output=True, text=True, timeout=12,

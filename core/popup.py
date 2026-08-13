@@ -1,26 +1,30 @@
 """
-core/popup.py — A3THER quick-launch popup (Windows).
+core/popup.py — the A3THER talking popup (Windows).
 
-A Claude-macOS-style floating overlay: press a hotkey (default Alt+F8) and a
-small always-on-top dark panel appears near the cursor showing the A3THER
-logo, the current mode, and one-tap actions — Summon HUD, Toggle Voice,
-Cycle Mode, Screenshot, Status. Esc or the ✕ hides it.
+A Claude-macOS / JARVIS-style floating overlay: press Alt+F8 (or let the
+assistant speak) and a small always-on-top panel appears — sometimes from
+the bottom, sometimes from the top, left or right — showing the A3THER
+logo as a "talking" avatar:
+
+* when the assistant is speaking, glowing voice rings pulse around the
+  logo and the transcript line shows the words as they're said;
+* one-tap actions: Open HUD · Voice · Mode · Shot · Status;
+* Esc or ✕ hides it; it auto-hides a few seconds after speech stops.
 
 Design notes
 ------------
-* Runs on its own daemon thread with a private ``Tk`` root, so it never
-  touches the backend's threads and never blocks the hotkey dispatcher.
-* ``show()`` / ``hide()`` are thread-safe: they push commands onto a queue
-  that the Tk thread polls with ``after()``.
-* The logo + panel are drawn with the ``Canvas`` widget (no PIL dependency
-  at runtime) and the window is frameless + always-on-top + transparent
-  background via ``-transparentcolor`` keying, so it reads as a floating
-  chip like Claude / Whisper Voice OS.
+* Own daemon Tk thread + a command queue (``show``/``hide``/``say`` are
+  thread-safe), so it never blocks the backend or the hotkey dispatcher.
+* Slide-in is a real geometry animation on that thread (``after()`` steps),
+  entering from a random edge each time.
+* ``say(text)`` is the public hook the TTS pipeline calls when it speaks,
+  so the popup doubles as a "who's talking" HUD overlay.
 """
 
 from __future__ import annotations
 
 import queue
+import random
 import threading
 from typing import Optional
 
@@ -32,8 +36,8 @@ try:
 except Exception:  # noqa: BLE001
     _tk = None
 
-_WIDTH = 320
-_HEIGHT = 150
+_WIDTH = 380
+_HEIGHT = 210
 _KEY_COLOR = "#010101"  # transparent key — the window bg colour on Windows
 
 _cmd_q: "queue.Queue[str]" = queue.Queue()
@@ -41,6 +45,7 @@ _root: Optional["_tk.Tk"] = None
 _thread: Optional[threading.Thread] = None
 _lock = threading.Lock()
 _visible = False
+_speaking = False
 
 
 def available() -> bool:
@@ -51,37 +56,23 @@ def available() -> bool:
 # --------------------------------------------------------------------------- #
 # Drawing
 # --------------------------------------------------------------------------- #
-def _draw_logo(canvas) -> None:
-    """Show the real A3THER logo (assets/logo_popup.png) in the panel.
-
-    Uses tkinter's native PNG support (Tk 8.6+ — no PIL at runtime). Falls
-    back to the drawn glowing 'A' glyph when the asset is missing. The
-    reference is kept on the canvas so the PhotoImage isn't GC'd.
-    """
+def _load_logo_photo(root) -> Optional[object]:
     try:
         from core.resources import asset_path  # noqa: PLC0415
 
         photo = _tk.PhotoImage(file=asset_path("logo_popup.png"))
-        canvas.photo = photo  # keep a reference — tkinter drops images otherwise
-        canvas.create_image(48, 48, image=photo)
-        return
-    except Exception:  # noqa: BLE001 — fall back to the drawn glyph
-        pass
-    w, h = 64, 64
-    x0, y0 = 16, 16
-    canvas.create_oval(x0, y0, x0 + w, y0 + h, fill="#0a1220", outline="#00d2ff", width=2)
-    # Glow: two faint rings (6-digit hex only — tkinter rejects #rrggbbaa).
-    canvas.create_oval(x0 - 4, y0 - 4, x0 + w + 4, y0 + h + 4, outline="#2a7a95", width=1)
-    canvas.create_oval(x0 - 9, y0 - 9, x0 + w + 9, y0 + h + 9, outline="#1c5368", width=1)
-    # The 'A' — angled bars + crossbar.
-    cx, cy = x0 + w / 2, y0 + h / 2
-    canvas.create_line(cx - 15, cy + 20, cx, cy - 18, fill="#00d2ff", width=6, capstyle="round")
-    canvas.create_line(cx, cy - 18, cx + 15, cy + 20, fill="#00d2ff", width=6, capstyle="round")
-    canvas.create_line(cx - 8, cy + 4, cx + 8, cy + 4, fill="#00d2ff", width=5)
+        return photo
+    except Exception:  # noqa: BLE001 — fall back to a drawn glyph
+        canvas = _tk.Canvas(root, width=64, height=64)
+        canvas.create_oval(4, 4, 60, 60, fill="#0a1220", outline="#00d2ff", width=2)
+        canvas.create_line(22, 46, 32, 18, fill="#00d2ff", width=6, capstyle="round")
+        canvas.create_line(32, 18, 42, 46, fill="#00d2ff", width=6, capstyle="round")
+        canvas.create_line(25, 32, 39, 32, fill="#00d2ff", width=5)
+        canvas.postscript  # noqa: B018 — keep the branch referenced
+        return None
 
 
 def _build_root() -> "_tk.Tk":
-    global _visible
     root = _tk.Tk()
     root.withdraw()
     root.overrideredirect(True)  # frameless
@@ -94,22 +85,39 @@ def _build_root() -> "_tk.Tk":
 
     canvas = _tk.Canvas(root, width=_WIDTH, height=_HEIGHT, bg=_KEY_COLOR, highlightthickness=0, bd=0)
     canvas.pack(fill="both", expand=True)
-    # Panel (dark, rounded feel via plain rect on transparent bg).
+    # Panel.
     canvas.create_rectangle(2, 2, _WIDTH - 2, _HEIGHT - 2, fill="#0a0f1a", outline="#1b2a44", width=1)
 
-    _draw_logo(canvas)
+    # Logo (talking avatar) at the left.
+    photo = _load_logo_photo(root)
+    if photo is not None:
+        canvas.photo = photo  # keep a reference — tkinter drops images otherwise
+        canvas.create_image(50, 62, image=photo)
+    else:
+        canvas.create_text(50, 62, text="A", fill="#00d2ff", font=("Segoe UI", 40, "bold"))
 
-    # Mode label.
-    mode_text = canvas.create_text(
-        100, 34, anchor="w", fill="#e8f6ff",
-        font=("Segoe UI", 12, "bold"),
-        text="A.3.T.H.E.R.",
+    # Voice rings — ovals around the logo; the speaking loop pulses them.
+    # Created first (or lowered) so they glow BEHIND the logo, not on top.
+    rings = []
+    for i in range(3):
+        rings.append(canvas.create_oval(36, 48, 64, 76, outline="#00d2ff", width=1))
+    for item in rings:
+        canvas.tag_lower(item)
+    canvas.ring_items = rings
+
+    # Name + status.
+    canvas.create_text(
+        104, 26, anchor="w", fill="#e8f6ff", font=("Segoe UI", 13, "bold"), text="A.3.T.H.E.R."
     )
     mode_sub = canvas.create_text(
-        100, 54, anchor="w", fill="#7a94b8",
-        font=("Segoe UI", 9),
-        text="…",
+        104, 46, anchor="w", fill="#7a94b8", font=("Segoe UI", 9), text="…",
     )
+    # Transcript — the words the assistant is saying (wraps on 2 lines).
+    transcript = canvas.create_text(
+        104, 84, anchor="nw", fill="#cfe8ff", font=("Segoe UI", 10),
+        width=_WIDTH - 130, justify="left",
+    )
+    canvas.refs = {"transcript": transcript, "mode_sub": mode_sub}
 
     # Close button (✕).
     close_btn = _tk.Label(root, text="✕", bg="#0a0f1a", fg="#7a94b8", font=("Segoe UI", 11), cursor="hand2")
@@ -137,7 +145,6 @@ def _build_root() -> "_tk.Tk":
 
     close_btn.bind("<Button-1>", lambda e: hide())
     root.bind("<Escape>", lambda e: hide())
-    # Clicking the logo area = summon the HUD.
     canvas.tag_bind("all", "<Button-1>", lambda e: (_dispatch("toggle_hud"), hide()))
 
     def _refresh_mode() -> None:
@@ -145,14 +152,12 @@ def _build_root() -> "_tk.Tk":
             from core.modes import ModeManager  # noqa: PLC0415
 
             meta = ModeManager().get_mode_metadata()
-            canvas.itemconfigure(mode_text, text=f"A.3.T.H.E.R.  ·  {meta['name']}")
-            canvas.itemconfigure(mode_sub, text=f"{meta.get('vibe', '').upper()}  ·  Alt+F8 to hide")
+            canvas.itemconfigure(mode_sub, text=f"{meta['name'].upper()}  ·  {meta.get('vibe', '').upper()}")
         except Exception:  # noqa: BLE001
             pass
 
     _refresh_mode()
     root.after(3000, _refresh_mode)
-
     return root
 
 
@@ -167,6 +172,151 @@ def _dispatch(action: str) -> None:
         mgr._handle(action)  # noqa: SLF001
     except Exception:  # noqa: BLE001
         pass
+
+
+# --------------------------------------------------------------------------- #
+# Animation helpers (run on the Tk thread)
+# --------------------------------------------------------------------------- #
+def _target_rect(root) -> tuple[int, int, int, int]:
+    """Target geometry near the cursor, clamped to the screen."""
+    try:
+        x = root.winfo_pointerx() - _WIDTH // 2
+        y = root.winfo_pointery() - 20
+        sw = root.winfo_screenwidth()
+        sh = root.winfo_screenheight()
+        x = max(8, min(x, sw - _WIDTH - 8))
+        y = max(8, min(y, sh - _HEIGHT - 8))
+    except Exception:  # noqa: BLE001
+        x, y = 60, 60
+    return x, y, _WIDTH, _HEIGHT
+
+
+def _slide_in(root, x: int, y: int, w: int, h: int) -> None:
+    """Animate the window in from a random edge (sometimes down, sometimes up)."""
+    edge = random.choice(("up", "down", "left", "right"))
+    sw = root.winfo_screenwidth()
+    sh = root.winfo_screenheight()
+    starts = {
+        "up": (x, -h - 4),
+        "down": (x, sh + 4),
+        "left": (-w - 4, y),
+        "right": (sw + 4, y),
+    }
+    sx, sy = starts[edge]
+    steps = 12
+    for i in range(1, steps + 1):
+        t = i / steps
+        ease = t * t * (3 - 2 * t)  # smoothstep
+        cx = round(sx + (x - sx) * ease)
+        cy = round(sy + (y - sy) * ease)
+        root.geometry(f"{w}x{h}+{cx}+{cy}")
+        try:
+            root.update_idletasks()
+        except Exception:  # noqa: BLE001
+            pass
+        # Small sleep between steps — non-blocking enough on the Tk thread.
+        _tk_root_wait(0.012)
+
+
+def _tk_root_wait(seconds: float) -> None:
+    try:
+        import time
+
+        time.sleep(seconds)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _pulse_rings(root, canvas, active: bool) -> None:
+    """Smooth pulse of the voice rings while speaking; still ring otherwise."""
+    import math  # noqa: PLC0415
+
+    def _frame(i: int = 0) -> None:
+        items = getattr(canvas, "ring_items", [])
+        cx, cy = 50, 62
+        if not _speaking:
+            for item in items:
+                try:
+                    canvas.coords(item, cx - 14, cy - 14, cx + 14, cy + 14)
+                    canvas.itemconfigure(item, width=1)
+                except Exception:  # noqa: BLE001
+                    pass
+            return
+        phase = (i % 30) / 30.0
+        for k, item in enumerate(items):
+            rad = 16 + 24 * (0.5 - 0.5 * math.cos(2 * math.pi * (phase + k * 0.14)))
+            try:
+                canvas.coords(item, cx - rad, cy - rad, cx + rad, cy + rad)
+                canvas.itemconfigure(item, width=2 if k == 0 else 1)
+            except Exception:  # noqa: BLE001
+                pass
+        if _speaking:
+            root.after(40, lambda: _frame(i + 1))
+
+    _frame()
+
+
+def _show_now(root) -> None:
+    global _visible
+    try:
+        x, y, w, h = _target_rect(root)
+        root.deiconify()
+        root.lift()
+        root.attributes("-topmost", True)
+        _slide_in(root, x, y, w, h)
+        _visible = True
+        # If the assistant is talking, make sure the rings are pulsing.
+        if _speaking:
+            canvas = _canvas_of(root)
+            if canvas is not None:
+                _pulse_rings(root, canvas, True)
+    except Exception:  # noqa: BLE001
+        _visible = False
+
+
+def _canvas_of(root) -> Optional[object]:
+    try:
+        return root.winfo_children()[0]  # the Canvas
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _say_now(root, text: str) -> None:
+    """Show + update transcript + start the speaking animation."""
+    global _visible, _speaking
+    canvas = _canvas_of(root)
+    if canvas is None:
+        return
+    _speaking = True
+    try:
+        refs = getattr(canvas, "refs", {})
+        canvas.itemconfigure(refs["transcript"], text=text[:220])
+    except Exception:  # noqa: BLE001
+        pass
+    if not _visible:
+        _show_now(root)
+    else:
+        _pulse_rings(root, canvas, True)
+
+
+def _stop_speaking_now(root) -> None:
+    global _speaking
+    _speaking = False
+    canvas = _canvas_of(root)
+    if canvas is not None:
+        _pulse_rings(root, canvas, False)
+    # Auto-hide a moment after silence so the popup doesn't linger.
+    root.after(3200, _auto_hide_if_quiet)
+
+
+def _auto_hide_if_quiet() -> None:
+    global _visible
+    if not _speaking and _visible:
+        try:
+            _root.withdraw()
+            _visible = False
+        except Exception:  # noqa: BLE001
+            pass
 
 
 # --------------------------------------------------------------------------- #
@@ -188,6 +338,10 @@ def _tk_loop() -> None:
                     elif cmd == "hide":
                         root.withdraw()
                         _visible = False
+                    elif cmd.startswith("say:"):
+                        _say_now(root, cmd[4:])
+                    elif cmd == "stopspeaking":
+                        _stop_speaking_now(root)
             except queue.Empty:
                 pass
             root.after(80, _pump)
@@ -200,30 +354,11 @@ def _tk_loop() -> None:
         _root = None
 
 
-def _show_now(root) -> None:
-    global _visible
-    try:
-        # Center near the cursor when possible.
-        x = root.winfo_pointerx() - _WIDTH // 2
-        y = root.winfo_pointery() - 20
-        sw = root.winfo_screenwidth()
-        sh = root.winfo_screenheight()
-        x = max(8, min(x, sw - _WIDTH - 8))
-        y = max(8, min(y, sh - _HEIGHT - 8))
-        root.geometry(f"{_WIDTH}x{_HEIGHT}+{x}+{y}")
-        root.deiconify()
-        root.lift()
-        root.attributes("-topmost", True)
-        _visible = True
-    except Exception:  # noqa: BLE001
-        pass
-
-
 # --------------------------------------------------------------------------- #
 # Public API (thread-safe)
 # --------------------------------------------------------------------------- #
 def show() -> bool:
-    """Show the popup near the cursor. Spawns the Tk thread on first use."""
+    """Show the popup near the cursor (slide-in from a random edge)."""
     global _thread
     if not available():
         return False
@@ -239,19 +374,48 @@ def hide() -> None:
     _cmd_q.put("hide")
 
 
+def say(text: str) -> None:
+    """The assistant is saying ``text`` — show the popup and animate it.
+
+    Called by the TTS pipeline; safe from any thread.
+    """
+    if not available() or not _speech_enabled():
+        return
+    if not text:
+        return
+    # Bounce long text through the queue as one command.
+    _cmd_q.put("say:" + text[:220])
+
+
+def stop_speaking() -> None:
+    """The assistant finished talking — stop rings, auto-hide shortly after."""
+    _cmd_q.put("stopspeaking")
+
+
 def is_visible() -> bool:
     return _visible
+
+
+def _speech_enabled() -> bool:
+    """Respect the Settings toggle (Settings → Quick Popup → speech popup)."""
+    try:
+        from core.ui_settings import get_ui_setting  # noqa: PLC0415
+
+        return bool(get_ui_setting("speech_popup", True))
+    except Exception:  # noqa: BLE001
+        return True
 
 
 if __name__ == "__main__":  # pragma: no cover — manual smoke test
     print("available:", available())
     if available():
         show()
-        print("popup shown — Esc or ✕ to hide. Ctrl+C to quit.")
+        print("popup shown (slide-in). Simulating speech…")
         import time
 
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            hide()
+        say("Hello, this is A3THER. Everything is online and I am ready to help you.")
+        time.sleep(4)
+        stop_speaking()
+        time.sleep(2)
+        hide()
+        print("done.")
