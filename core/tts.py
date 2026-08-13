@@ -571,6 +571,7 @@ class TTSPlayer:
                 self._playing = True
             if on_start:
                 on_start()
+            self._notify_popup(text, True)
             self._engine.speak(text)
         except Exception as e:
             print(f"[TTS] Error: {e}")
@@ -579,6 +580,20 @@ class TTSPlayer:
                 self._playing = False
             if on_done:
                 on_done()
+            self._notify_popup(text, False)
+
+    @staticmethod
+    def _notify_popup(text: str, speaking: bool) -> None:
+        """Drive the talking popup overlay (logo + voice rings + transcript)."""
+        try:
+            from core import popup  # noqa: PLC0415
+
+            if speaking:
+                popup.say(text)
+            else:
+                popup.stop_speaking()
+        except Exception:  # noqa: BLE001 — the popup must never break speech
+            pass
 
     def stop(self) -> None:
         sd.stop()

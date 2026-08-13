@@ -29,6 +29,9 @@ DEFAULTS: Dict[str, Any] = {
     "globe": True,
     "background": False,          # start hidden (background mode)
     "startup": False,             # auto-start with Windows
+    "speech_popup": True,         # talking popup appears when A3THER speaks
+    "ha_url": "",                # Home Assistant server (JARVIS integration)
+    "ha_token": "",              # Home Assistant long-lived access token
     "hotkeys": {
         "toggle_hud": "Alt+F1",
         "toggle_voice": "Alt+F2",

@@ -30,6 +30,9 @@ from backend.api.extensions import ui_router as extensions_ui_router
 # A3THER features: voice, security, memory, codebase, swarm, website maker
 from backend.api.features import features_router, features_ui_router
 
+# A3THER JARVIS-style features: image gen, camera, vision, Home Assistant
+from backend.api.jarvis import jarvis_router
+
 # A3THER live HUD data: telemetry, devices, weather, location
 from backend.api.live import live_router
 
@@ -82,6 +85,7 @@ app.include_router(features_router)
 app.include_router(features_ui_router)
 
 # A3THER live HUD data (telemetry / devices / weather / location)
+app.include_router(jarvis_router)
 app.include_router(live_router)
 
 # A3THER multi-device mesh (broadcast / terminate / /ws/mesh)
@@ -162,6 +166,9 @@ class UISettingsRequest(BaseModel):
     globe: bool | None = None
     background: bool | None = None
     startup: bool | None = None
+    speech_popup: bool | None = None
+    ha_url: str | None = None
+    ha_token: str | None = None
 
 
 class HotkeysRequest(BaseModel):

@@ -405,6 +405,14 @@ async def amain(args: argparse.Namespace) -> int:
     redirect_to_log()
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
+    # Never flash console/PowerShell windows (GPU probe, toasts, MCP servers…).
+    try:
+        from core.silent import activate as _silence_children
+
+        _silence_children()
+    except Exception:  # noqa: BLE001
+        pass
+
     if not args.headless:
         print("╔════════════════════════════════════════════╗")
         print("║        A.3.T.H.E.R. — DESKTOP MODE         ║")

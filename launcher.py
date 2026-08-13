@@ -180,6 +180,16 @@ def _start_tray(on_quit=None) -> bool:
         return False
 
 
+def _silence_console_children() -> None:
+    """Never flash console/PowerShell windows for any subprocess."""
+    try:
+        from core.silent import activate
+
+        activate()
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _start_remote_server(port: int | None = None, allow_shell: bool = False) -> None:
     """Start the Phase-1 LAN remote-control server (pairing + actions).
 
@@ -206,6 +216,9 @@ def main() -> int:
     except Exception:  # noqa: BLE001
         pass
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+    # Never flash console/PowerShell windows (GPU probe, toasts, MCP servers…).
+    _silence_console_children()
 
     parser = argparse.ArgumentParser(description="A.3.T.H.E.R. desktop launcher")
     parser.add_argument("--port", type=int, default=int(os.environ.get("A3THER_PORT", "8000")))
