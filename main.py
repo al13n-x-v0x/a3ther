@@ -460,6 +460,21 @@ async def amain(args: argparse.Namespace) -> int:
     # USB port loop (background thread — survives for the app's lifetime).
     start_usb_watch(interval=args.usb_interval)
 
+    # Phone remote-control server (pair, screen stream, input) — same link
+    # launcher.py starts, so the frozen exe is a full remote target too.
+    if not args.no_remote:
+        try:
+            from remote_dev.agent_server import start_server as start_remote
+
+            start_remote(
+                port=args.remote_port,
+                allow_shell=args.allow_remote_shell,
+                background=True,
+            )
+            log(f"[A3THER] remote control ready — phone link on port {args.remote_port}")
+        except Exception as exc:  # noqa: BLE001
+            log(f"[A3THER] remote control unavailable: {exc}")
+
     os.environ["A3THER_PORT"] = str(args.port)
 
     import backend.api.server as app_module  # noqa: PLC0415
@@ -575,6 +590,9 @@ def main() -> int:
     parser.add_argument("--background", action="store_true", help="run hidden — summon with Alt+F1")
     parser.add_argument("--no-hotkeys", action="store_true", help="disable global hotkeys")
     parser.add_argument("--no-tray", action="store_true", help="disable the system-tray icon")
+    parser.add_argument("--no-remote", action="store_true", help="disable the phone remote-control server")
+    parser.add_argument("--remote-port", type=int, default=int(os.environ.get("A3THER_REMOTE_PORT", "42872")))
+    parser.add_argument("--allow-remote-shell", action="store_true", help="allow 'run <command>' from paired phones")
     args = parser.parse_args()
     if args.window_host:
         return _window_host(args)

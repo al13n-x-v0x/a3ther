@@ -117,6 +117,13 @@ hiddenimports = [
     "tkinter",
     "core.startup",
     "core.auto_deps",
+    # Video editor — lazily imported by /api/video/*; with cv2 excluded below
+    # it degrades to a clean 400 ("pip install opencv-python") in the exe
+    # and works fully in dev runs where cv2 is present.
+    "video_editor",
+    "video_editor.engine",
+    "video_editor.styles",
+    "video_editor.clips",
 ]
 
 a = Analysis(
@@ -146,6 +153,8 @@ a = Analysis(
         "cv2",
         "matplotlib",
         "notebook",
+        "IPython",
+        "jupyter",
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

@@ -386,7 +386,7 @@ def video_render(body: VideoRenderRequest):
                 status_code=400,
             )
         job = start_render(body.source_dir, body.style, body.title)
-        return {"ok": True, "job": job.to_dict()}
+        return {"ok": True, "job": job}
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
     except Exception as exc:  # noqa: BLE001
@@ -434,6 +434,8 @@ def video_clips_search(body: VideoClipsSearchRequest):
         from video_editor.clips import search_clips
 
         return search_clips(body.query, body.max_results or 10)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
     except Exception as exc:  # noqa: BLE001
         return JSONResponse({"error": str(exc)}, status_code=500)
 
@@ -451,6 +453,8 @@ def video_clips_render(body: VideoClipsRenderRequest):
                 status_code=400,
             )
         return fetch_and_render(body.query, body.style, body.count, body.title)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
     except Exception as exc:  # noqa: BLE001
         return JSONResponse({"error": str(exc)}, status_code=500)
 

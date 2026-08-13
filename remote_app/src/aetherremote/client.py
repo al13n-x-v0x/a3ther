@@ -111,3 +111,12 @@ def confirm(base: str, code: str, name: str = "Phone", device_id: str = "") -> s
 def command(base: str, token: str, action: str, timeout: float = 30.0) -> dict:
     """Run an action on the laptop; returns the full response."""
     return _call(_base(base), "POST", "/command", {"action": action}, token=token, timeout=timeout)
+
+
+def viewer_url(base: str, token: str) -> str:
+    """URL the phone opens to see + control the laptop screen (tap/drag/keys).
+
+    Works on the LAN, and over any network when the laptop is reachable
+    (e.g. Tailscale) — the server already binds 0.0.0.0.
+    """
+    return _base(base) + "/remote/viewer?token=" + token

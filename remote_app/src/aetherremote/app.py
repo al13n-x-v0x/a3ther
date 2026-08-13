@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import threading
 import uuid
+import webbrowser
 
 import toga
 from toga.style.pack import COLUMN, ROW, Pack
@@ -59,6 +60,7 @@ class AetherRemote(toga.App):
         btn_row1.add(toga.Button("Open Notepad", on_press=lambda w: self.do_command("open notepad"), style=Pack(padding=5)))
         btn_row2 = toga.Box(style=Pack(direction=ROW))
         btn_row2.add(toga.Button("Lock PC", on_press=lambda w: self.do_command("lock"), style=Pack(padding=5)))
+        btn_row2.add(toga.Button("Screen", on_press=self.open_screen, style=Pack(padding=5)))
         btn_row2.add(toga.Button("Unpair", on_press=self.do_unpair, style=Pack(padding=5)))
 
         # -- layout --------------------------------------------------------- #
@@ -159,6 +161,25 @@ class AetherRemote(toga.App):
             self._log("  screenshot captured (%d bytes png)" % len(result["png_base64"]))
         else:
             self._log(f"  {result}")
+
+    def open_screen(self, widget=None):
+        """Open the live screen viewer — see + control the laptop from the phone.
+
+        Opens the laptop's /remote/viewer page in the phone browser: tap =
+        click, hold = right-click, drag = mouse, scroll = wheel, plus a
+        keyboard bar for typing. Needs the remote server (auto-started by
+        the launcher) and works over LAN or Tailscale.
+        """
+        if not self._require_paired():
+            return
+        url = client.viewer_url(self.base, self.token)
+        self.status.text = "Opening screen viewer…"
+        self._log(f"Screen viewer: {url}")
+        try:
+            webbrowser.open(url)
+            self._log("Tap/drag on the screen to control the laptop.")
+        except Exception as exc:  # noqa: BLE001
+            self.status.text = f"Could not open the viewer: {exc}"
 
     def do_unpair(self, widget=None):
         self.token, self.base = "", ""

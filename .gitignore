@@ -26,6 +26,10 @@ dist/A3THER/
 dist/A3THER.exe
 dist/*.zip
 
+# Generated media — video editor renders + downloaded clips
+Output/videos/
+Output/clips/
+
 # OS junk
 Thumbs.db
 .DS_Store

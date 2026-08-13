@@ -27,7 +27,7 @@ It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Gr
 | **Start with Windows** | Real per-user registry `Run` key, installed from Settings |
 | **Memory** | JSON-backed long-term memory + session summaries + keyword search |
 | **Plugins & Gateway** | Plugin loader (system-probe, web-fetch) + multi-provider LLM gateway |
-| **Remote Control** | Phone app (`AetherRemote.apk`) pairs over LAN — discover, pair, open apps, lock, status, screenshot |
+| **Remote Control** | Phone app pairs over LAN/Tailscale — discover, pair, open apps, lock, plus **live screen streaming + touch/keyboard control** of the laptop from the phone, and one-command phone mirroring (scrcpy) |
 | **ScanGuard** | Double-extension & magic-byte scanner (Windows exe + Android APK) |
 | **Phone tools** | `phone.sh` + `PHONE.md` — scrcpy/ADB helpers to mirror & control your phone from the PC |
 
@@ -107,9 +107,14 @@ Right-click the **A3THER** icon (cyan "A") in the notification area for Summon H
 
 ### Phone remote control
 1. `python launcher.py` on the laptop.
-2. Install **`AetherRemote.apk`** (from the `remote_app` release / `dist/`) on your phone — same Wi-Fi.
+2. Install **`AetherRemote.apk`** on your phone — same Wi-Fi.
 3. Phone → *Find laptop* → enter the 6-digit code shown on the laptop → *Pair*.
-4. Control: Status · Open Chrome · Open Notepad · Lock — straight from the phone.
+4. **Screen** — live view of the laptop; tap = click, hold = right-click, drag = mouse, scroll = wheel, keyboard bar = typing.
+5. Status · Open Chrome · Open Notepad · Lock — straight from the phone.
+
+**Use it from anywhere:** the server binds `0.0.0.0`. Install Tailscale on both devices (`winget install Tailscale.Tailscale`, then `python -m remote_dev.tailnet` for your IP), and the phone reaches the laptop over any network — mobile data, another country — with zero port-forwarding.
+
+**Control the phone from the laptop:** `./phone.sh wifi` — plug the phone in once over USB, and it auto-switches to wireless ADB and mirrors the phone screen on your PC (scrcpy).
 
 ---
 
@@ -160,9 +165,10 @@ cd remote_app && briefcase build android  # or use the prebuilt AetherRemote.apk
 | System tray + quick popup | ✅ Live |
 | Start with Windows | ✅ Live (registry) |
 | Memory + plugins + gateway | ✅ Live |
-| Phone remote control (LAN) | ✅ Phase-1 live |
+| Phone remote control (LAN/Tailnet) | ✅ Live — pair + commands + **screen streaming + touch/keyboard input** |
 | ScanGuard scanner | ✅ Live (exe + APK) |
-| Screen streaming / full remote desktop | 🚧 Roadmap (real, not faked) |
+| Laptop → phone mirroring | ✅ Live (`phone.sh wifi` via scrcpy/ADB) |
+| Video editor | ✅ Live (OpenCV renders; honest errors when deps missing) |
 
 See [`REMOTE.md`](REMOTE.md) for the honest remote-control roadmap.
 

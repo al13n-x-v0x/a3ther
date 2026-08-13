@@ -45,6 +45,9 @@ from .devices import (
     get_identity,
     get_pairing_store,
 )
+from .input_control import handle_event as _handle_input_event
+from .screen_stream import get_streamer, stop_streamer
+from .viewer import VIEWER_HTML
 
 log = logging.getLogger("a3ther.remote")
 
@@ -233,6 +236,12 @@ class _Handler(BaseHTTPRequestHandler):
         auth = self.headers.get("Authorization") or ""
         if auth.lower().startswith("bearer "):
             return auth[7:].strip()
+        # Browsers can't set headers on <img> loads — allow ?token= for the
+        # stream + viewer (the token is minted during pairing, never public).
+        query = urlparse(self.path).query
+        for part in query.split("&"):
+            if part.startswith("token="):
+                return part[6:].strip()
         return None
 
     def _require_token(self) -> bool:
@@ -244,6 +253,10 @@ class _Handler(BaseHTTPRequestHandler):
         return False
 
     # -- routing ------------------------------------------------------------ #
+    def _authorized(self) -> bool:
+        token = self._token()
+        return bool(token and self.server.pairing.is_valid(token))
+
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         if path == "/identity":
@@ -251,8 +264,51 @@ class _Handler(BaseHTTPRequestHandler):
         elif path == "/devices":
             if self._require_token():
                 self._send(200, {"ok": True, "devices": self.server.pairing.devices()})
+        elif path == "/remote/viewer":
+            if not self._authorized():
+                self._send(401, {"ok": False, "error": "Unauthorized. Pair first (POST /pair)."})
+                return
+            body = VIEWER_HTML.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        elif path == "/remote/stream":
+            if not self._authorized():
+                self._send(401, {"ok": False, "error": "Unauthorized. Pair first (POST /pair)."})
+                return
+            self._stream_mjpeg()
         else:
             self._send(404, {"ok": False, "error": "Not found"})
+
+    def _stream_mjpeg(self) -> None:
+        """MJPEG screen stream — the phone's <img> polls this for frames."""
+        streamer = get_streamer()
+        self.send_response(200)
+        self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        boundary = b"--frame\r\n"
+        last_gen = -1
+        while True:
+            jpeg, _monitor, gen, err = streamer.slot.latest()
+            if err:
+                time.sleep(0.5)
+                continue
+            if jpeg is None or gen == last_gen:
+                time.sleep(0.05)
+                continue
+            last_gen = gen
+            try:
+                self.wfile.write(boundary)
+                self.wfile.write(b"Content-Type: image/jpeg\r\nContent-Length: " + str(len(jpeg)).encode() + b"\r\n\r\n")
+                self.wfile.write(jpeg)
+                self.wfile.write(b"\r\n")
+                self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                break
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
@@ -281,6 +337,13 @@ class _Handler(BaseHTTPRequestHandler):
             action = str(body.get("action", ""))
             result = execute_action(action, allow_shell=self.server.allow_shell)
             self._send(200, {"ok": result.get("ok", False), "action": action, "result": result})
+            return
+
+        if path == "/remote/input":
+            if not self._require_token():
+                return
+            result = _handle_input_event(body)
+            self._send(200, {"ok": result.get("ok", False), "result": result})
             return
 
         if path == "/revoke":
@@ -374,6 +437,7 @@ def stop_server() -> None:
             pass
     if beacon:
         beacon.stop()
+    stop_streamer()
 
 
 # --------------------------------------------------------------------------- #
