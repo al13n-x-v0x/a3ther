@@ -52,7 +52,21 @@ def available() -> bool:
 # Drawing
 # --------------------------------------------------------------------------- #
 def _draw_logo(canvas) -> None:
-    """Draw the A3THER glyph: dark rounded chip, glowing cyan 'A'."""
+    """Show the real A3THER logo (assets/logo_popup.png) in the panel.
+
+    Uses tkinter's native PNG support (Tk 8.6+ — no PIL at runtime). Falls
+    back to the drawn glowing 'A' glyph when the asset is missing. The
+    reference is kept on the canvas so the PhotoImage isn't GC'd.
+    """
+    try:
+        from core.resources import asset_path  # noqa: PLC0415
+
+        photo = _tk.PhotoImage(file=asset_path("logo_popup.png"))
+        canvas.photo = photo  # keep a reference — tkinter drops images otherwise
+        canvas.create_image(48, 48, image=photo)
+        return
+    except Exception:  # noqa: BLE001 — fall back to the drawn glyph
+        pass
     w, h = 64, 64
     x0, y0 = 16, 16
     canvas.create_oval(x0, y0, x0 + w, y0 + h, fill="#0a1220", outline="#00d2ff", width=2)

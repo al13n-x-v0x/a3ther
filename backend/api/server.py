@@ -95,6 +95,34 @@ _OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "Output" / "websit
 _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/websites", StaticFiles(directory=str(_OUTPUT_DIR)), name="websites")
 
+# Branded assets (the real A3THER logo) — served to the HUD as favicon + topbar
+# mark. Works from source AND inside the frozen bundle (core.resources).
+ASSETS_DIR = Path(importlib.util.find_spec("core.resources").origin).resolve().parent.parent / "assets"
+if not ASSETS_DIR.is_dir():
+    try:  # frozen: assets live next to the extracted bundle
+        from core.resources import assets_dir as _assets_dir
+
+        ASSETS_DIR = Path(_assets_dir())
+    except Exception:  # noqa: BLE001
+        pass
+
+
+@app.get("/assets/{name}")
+def Asset(name: str):
+    """Serve a branded asset (logo.png, logo.ico, …) with a safe name."""
+    safe = Path(name).name
+    path = ASSETS_DIR / safe
+    if path.is_file():
+        return FileResponse(str(path))
+    return JSONResponse({"error": "asset not found"}, status_code=404)
+
+
+@app.get("/favicon.ico")
+def Favicon():
+    """Browser favicon = the A3THER logo."""
+    path = ASSETS_DIR / "logo.ico"
+    return FileResponse(str(path), media_type="image/x-icon") if path.is_file() else JSONResponse({"error": "not found"}, status_code=404)
+
 
 
 

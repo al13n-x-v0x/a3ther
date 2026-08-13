@@ -35,12 +35,11 @@ It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Gr
 
 ## 🚀 Quick Start — the EXE (no Python, no pip)
 
-1. Download **`A3THER-windows-x64.zip`** from the [latest release](https://github.com/al13n-x-v0x/a3ther/releases/latest).
-2. Extract it anywhere and run **`A3THER.exe`**.
-3. The HUD opens in your browser at `http://localhost:8000` (native window mode also available).
-4. First run **auto-installs** the optional voice deps it needs (`vosk`, `edge-tts`, …) — no manual pip.
-5. The Vosk STT model (~40 MB) downloads once on first voice use.
-6. No LLM key? It falls back to local **Ollama** — or pick a provider in Settings.
+1. Download **`A3THER.exe`** (single self-contained file) from the [latest release](https://github.com/al13n-x-v0x/a3ther/releases/latest).
+2. Run it — done. The HUD opens in your browser at `http://localhost:8000` (native window mode also available).
+3. First run **auto-installs** the optional voice deps it needs (`vosk`, `edge-tts`, …) — no manual pip.
+4. The Vosk STT model (~40 MB) downloads once on first voice use.
+5. No LLM key? It falls back to local **Ollama** — or pick a provider in Settings.
 
 > 🔒 Nothing is bundled with your keys. API keys live in `%LOCALAPPDATA%\A3THER\` — never in the repo or the exe.
 

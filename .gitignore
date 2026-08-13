@@ -18,11 +18,13 @@ remote_app/logs/
 config/api_keys.json
 config/servers.json
 
-# PyInstaller working dir + the built A3THER bundle (161 MB) — the exe ships
-# as a GitHub release asset, not in git. The ScanGuard exe under dist/ is
+# PyInstaller working dir + the built A3THER bundle/exe — the exe ships as
+# a GitHub release asset, not in git. The ScanGuard exe under dist/ is
 # tracked on purpose.
 build/
 dist/A3THER/
+dist/A3THER.exe
+dist/*.zip
 
 # OS junk
 Thumbs.db
