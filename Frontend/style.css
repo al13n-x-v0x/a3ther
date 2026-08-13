@@ -278,6 +278,32 @@ input { border: none; outline: none; background: none; color: #fff; font-family:
 #clock-time { font-family: "Orbitron", sans-serif; font-size: 18px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 12px rgba(0, 210, 255, .6); }
 #clock-date { font-size: 10px; color: var(--muted); letter-spacing: .06em; }
 
+/* ---- mode switcher ---- */
+#mode-switcher { justify-content: center; }
+.mode-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: rgba(0, 210, 255, .06);
+  color: var(--cyan-soft);
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: all .3s;
+}
+.mode-chip i { color: var(--cyan); }
+.mode-chip:hover {
+  background: rgba(0, 210, 255, .14);
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(0, 210, 255, .35);
+  transform: translateY(-1px);
+}
+
 /* ---- navigation strip ---- */
 #top-navigation {
   flex: 1 1 100%;
@@ -1363,6 +1389,16 @@ input[type="range"]::-webkit-slider-thumb {
   line-height: 1.6;
   margin-top: 8px;
 }
+
+/* mode option buttons (settings) */
+.mode-option { justify-content: center; text-transform: uppercase; }
+.mode-option.mode-active {
+  background: rgba(0, 210, 255, .16);
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px rgba(0, 210, 255, .3);
+  color: var(--cyan);
+}
+.hotkey-input { font-family: "Orbitron", sans-serif; letter-spacing: .1em; text-align: center; max-width: 120px; }
 
 /* ==========================================================
    RESPONSIVE

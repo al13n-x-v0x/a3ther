@@ -107,6 +107,12 @@ hiddenimports = [
     "webview.platforms.edgechromium",
     "clr",
     "pythonnet",
+    # System tray + quick popup (core/tray.py, core/popup.py).
+    "pystray",
+    "PIL",
+    "tkinter",
+    "core.startup",
+    "core.auto_deps",
 ]
 
 a = Analysis(
@@ -132,7 +138,6 @@ a = Analysis(
         "tokenizers",
         "PyQt6",
         "PySide6",
-        "tkinter",
         "playwright",
         "cv2",
         "matplotlib",

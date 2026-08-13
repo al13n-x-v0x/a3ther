@@ -280,8 +280,20 @@ def ConnectModel():
 # ===============================
 
 
+def GetAssistantIdentity() -> dict:
+    """Custom name + tagline from Settings (falls back to the defaults)."""
+    try:
+        from core.ui_settings import get_identity
+
+        return get_identity()
+    except Exception:  # noqa: BLE001
+        return {"name": "A.3.T.H.E.R.", "tagline": AETHER_SYSTEM_PROMPT.strip().splitlines()[1] if len(AETHER_SYSTEM_PROMPT.strip().splitlines()) > 1 else "Adaptive assistant"}
+
+
 def BuildPrompt(message: str, mode: str | None = None) -> str:
     """Build a prompt including the system persona, current mode, and user text."""
+    identity = GetAssistantIdentity()
+    system = AETHER_SYSTEM_PROMPT.replace("A.3.T.H.E.R", identity["name"])
     mode_prompt = ""
     try:
         if _MODE_MANAGER is not None:
@@ -290,7 +302,7 @@ def BuildPrompt(message: str, mode: str | None = None) -> str:
         logging.warning(f"[MODE] Could not build mode prompt: {e}")
 
     return (
-        AETHER_SYSTEM_PROMPT
+        system
         + "\n\n"
         + mode_prompt
         + "\n\nUSER:\n"
