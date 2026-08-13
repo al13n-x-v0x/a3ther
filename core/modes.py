@@ -83,7 +83,48 @@ MODE_REGISTRY: Dict[str, ModeSettings] = {
         tts_speed=1.0,
         tone="supportive",
     ),
+    "humanoid": ModeSettings(
+        name="Humanoid Mode",
+        description="Warm, expressive companion mode — natural conversation with emotion, humor, and presence.",
+        guidance=(
+            "Speak like a warm, attentive human companion: use contractions, react emotionally to what is said, "
+            "ask natural follow-up questions, and vary sentence rhythm. Never sound robotic. "
+            "Match the user's energy — playful when they are playful, serious when they are serious."
+        ),
+        tts_voice="en-US-AriaNeural",
+        tts_speed=1.0,
+        tone="warm",
+    ),
+    "gaming": ModeSettings(
+        name="Gaming Mode",
+        description="Low-latency, hype companion mode for gaming sessions — quick, punchy, in-the-moment.",
+        guidance=(
+            "Keep replies short, punchy, and instant — gamers do not want essays. "
+            "Use gaming language naturally (GG, clutch, setup, meta, FPS). "
+            "Prefer 1-2 sentence answers, give quick callouts, and keep energy high. "
+            "If asked for technical help, still give the exact steps but skip the fluff."
+        ),
+        tts_voice="en-US-GuyNeural",
+        tts_speed=1.15,
+        tone="hype",
+    ),
 }
+
+#: Per-mode UI metadata — accent color pair + icon + vibe label so the HUD
+#: can re-theme itself when the mode switches (kept separate from
+#: ModeSettings so TTS/voice concerns stay decoupled from cosmetics).
+MODE_UI_META: Dict[str, Dict[str, Any]] = {
+    "ai":       {"accent": ["#00D2FF", "#FF9900"], "icon": "fa-microchip",      "vibe": "balanced"},
+    "research": {"accent": ["#8B5CF6", "#22D3EE"], "icon": "fa-flask",          "vibe": "analytical"},
+    "dev":      {"accent": ["#22C55E", "#84CC16"], "icon": "fa-code",           "vibe": "technical"},
+    "humanoid": {"accent": ["#F472B6", "#FB923C"], "icon": "fa-face-smile",     "vibe": "warm"},
+    "gaming":   {"accent": ["#A855F7", "#EC4899"], "icon": "fa-gamepad",       "vibe": "hype"},
+    "angry":    {"accent": ["#EF4444", "#F97316"], "icon": "fa-fire-flame-curved", "vibe": "urgent"},
+    "chill":    {"accent": ["#34D399", "#60A5FA"], "icon": "fa-mug-hot",       "vibe": "relaxed"},
+    "mentor":   {"accent": ["#38BDF8", "#A3E635"], "icon": "fa-user-tie",      "vibe": "supportive"},
+}
+
+DEFAULT_UI_META = MODE_UI_META[DEFAULT_MODE]
 
 
 class ModeError(ValueError):
@@ -142,11 +183,21 @@ class ModeManager:
 
     def get_mode_metadata(self, mode: str | None = None) -> Dict[str, Any]:
         settings = self.get_settings(mode)
+        key = self._normalize(mode) if mode else self._mode
+        ui = MODE_UI_META.get(key, DEFAULT_UI_META)
         return {
-            "key": self._normalize(mode) if mode else self._mode,
+            "key": key,
             "name": settings.name,
             "description": settings.description,
             "tone": settings.tone,
             "tts_voice": settings.tts_voice,
             "tts_speed": settings.tts_speed,
+            "accent": ui["accent"],
+            "icon": ui["icon"],
+            "vibe": ui["vibe"],
         }
+
+    def get_ui_meta(self, mode: str | None = None) -> Dict[str, Any]:
+        """Return the cosmetic metadata for a mode (accent + icon)."""
+        key = self._normalize(mode) if mode else self._mode
+        return MODE_UI_META.get(key, DEFAULT_UI_META)

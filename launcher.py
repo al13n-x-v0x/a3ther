@@ -150,6 +150,36 @@ def _print_phone_link_later(port: int, delay: float = 5.0) -> None:
     threading.Thread(target=_run, daemon=True).start()
 
 
+def _start_hotkeys() -> None:
+    """Arm global hotkeys (Alt+F-keys) so A3THER works from any app,
+    including when running in the background. Non-Windows: no-op."""
+    try:
+        from core.hotkeys import start_hotkeys
+
+        if start_hotkeys():
+            print("[A3THER] Global hotkeys armed — Alt+F1..F7 (rebind in Settings).")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[A3THER] Global hotkeys unavailable: {exc}")
+
+
+def _start_tray(on_quit=None) -> bool:
+    """Start the system-tray icon (status + summon + quit).
+
+    Returns True when the icon is actually running. Requires pystray + PIL;
+    without them background mode simply has no icon (hotkeys still work).
+    """
+    try:
+        from core.tray import start_tray
+
+        ok = start_tray(on_quit=on_quit)
+        if ok:
+            print("[A3THER] Tray icon armed — right-click for status, summon & quit.")
+        return ok
+    except Exception as exc:  # noqa: BLE001
+        print(f"[A3THER] Tray icon unavailable: {exc}")
+        return False
+
+
 def _start_remote_server(port: int | None = None, allow_shell: bool = False) -> None:
     """Start the Phase-1 LAN remote-control server (pairing + actions).
 
@@ -198,16 +228,72 @@ def main() -> int:
         action="store_true",
         help="let the paired phone run shell commands on this PC",
     )
+    parser.add_argument(
+        "--background",
+        action="store_true",
+        help="run hidden in the background (no HUD window) — summon with Alt+F1",
+    )
+    parser.add_argument(
+        "--no-hotkeys",
+        action="store_true",
+        help="disable global hotkeys",
+    )
+    parser.add_argument(
+        "--no-tray",
+        action="store_true",
+        help="disable the system-tray icon",
+    )
     args = parser.parse_args()
 
     if not args.headless:
+        try:
+            from core.ui_settings import get_identity
+
+            ident = get_identity()
+        except Exception:  # noqa: BLE001
+            ident = {"name": "A.3.T.H.E.R.", "tagline": ""}
+        name = ident["name"]
+        tagline = ident["tagline"]
         print("╔════════════════════════════════════════════╗")
-        print("║        A.3.T.H.E.R. — DESKTOP MODE         ║")
+        print("║        " + name.ljust(33) + " ║")
+        print("║        DESKTOP MODE                        ║")
         print("╚════════════════════════════════════════════╝")
+        if tagline:
+            print(f"        {tagline}")
 
     _ensure_data_dir()
     _ensure_bundle_mirror()
     _run_first_run()
+
+    # Self-healing optional deps (vosk / edge-tts / miniaudio) — the exe
+    # installs what it needs once, so the user never touches pip. Honored
+    # with A3THER_SKIP_AUTO_DEPS=1.
+    try:
+        from core.auto_deps import ensure_optional_deps
+
+        ensure_optional_deps()
+    except Exception as exc:  # noqa: BLE001
+        print(f"[A3THER] Auto-deps skipped: {exc}")
+
+    # Global hotkeys (Alt+F-keys) — armed regardless of window state so the
+    # HUD can be summoned from anywhere, including background mode.
+    if not args.no_hotkeys:
+        _start_hotkeys()
+
+    # Background mode: apply the persisted background preference from Settings
+    # unless the user explicitly passed --background / wants the window.
+    if not args.background and not args.no_browser and not args.headless:
+        try:
+            from core.ui_settings import get_ui_setting
+
+            args.background = bool(get_ui_setting("background", False))
+        except Exception:  # noqa: BLE001
+            pass
+
+    if args.background:
+        args.no_browser = True
+        if not args.headless:
+            print("[A3THER] Background mode — HUD hidden. Press Alt+F1 to summon.")
 
     if not args.headless:
         print(f"[A3THER] HUD: http://127.0.0.1:{args.port}/")
@@ -227,12 +313,23 @@ def main() -> int:
     try:
         import uvicorn  # noqa: PLC0415
 
-        uvicorn.run(
-            app_module.app,
-            host=args.host,
-            port=args.port,
-            log_level="warning" if args.headless else "info",
+        # Run through a uvicorn.Server so the tray's Quit can stop it
+        # (server.should_exit = True from the tray thread).
+        server = uvicorn.Server(
+            uvicorn.Config(
+                app_module.app,
+                host=args.host,
+                port=args.port,
+                log_level="warning" if args.headless else "info",
+            )
         )
+
+        # System-tray icon — always on (unless --no-tray): status, summon,
+        # and a real Quit that shuts the server down cleanly.
+        if not args.no_tray:
+            _start_tray(on_quit=lambda: setattr(server, "should_exit", True))
+
+        server.run()
     except KeyboardInterrupt:
         print("\n[A3THER] Shutting down.")
     except Exception as exc:  # noqa: BLE001

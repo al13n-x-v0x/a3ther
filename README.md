@@ -1,349 +1,186 @@
-﻿# 🤖 A.3.T.H.E.R.
+# 🤖 A.3.T.H.E.R.
 
-# Adaptive 3rd-generation Technology for Heuristic Execution & Research
+### Adaptive 3rd-generation Technology for Heuristic Execution & Research
 
-> **Designed & Developed by AL13N Industries**
-
----
-
-# 🌌 Overview
-
-A.3.T.H.E.R. is a futuristic AI operating system inspired by advanced AI interfaces seen in science fiction.
-
-Unlike a normal chatbot, A.3.T.H.E.R. is designed to become an intelligent desktop command center capable of interacting with AI models, managing files, monitoring hardware, automating tasks, controlling voice interactions, and providing a highly immersive HUD.
-
-The current version focuses on building a cinematic futuristic interface before integrating AI and backend functionality.
+> **Designed & Developed by AL13N Industries** · Windows · Free & Open Source
 
 ---
 
-# 🎯 Project Goals
+## 🌌 What is A.3.T.H.E.R.?
 
-- Beautiful futuristic HUD
-- AI-powered assistant
-- Voice interaction
-- Desktop automation
-- Hardware monitoring
-- Live system information
-- Plugin ecosystem
-- Cross-platform architecture
-- Modular codebase
-- High-performance animations
+A.3.T.H.E.R. is a desktop AI command center for Windows. It's not a chatbot in a browser — it's a **full agent runtime** with a cinematic HUD, a real voice pipeline, global hotkeys, a system tray, a Claude-style quick popup, long-term memory, plugin and gateway ecosystems, and even phone remote control.
+
+It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Groq, or Anthropic.
 
 ---
 
-# 🏗 Current Technology Stack
+## ✨ Feature Highlights
 
-## Frontend
-
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
-
----
-
-## Future Frontend
-
-- Three.js
-- GSAP
-- WebGL
-- Electron
-
----
-
-## Backend (Planned)
-
-- Python
-- FastAPI
-- SQLite
-- Google Gemini
-- OpenAI
-- Ollama / Local Models
+| Area | What you get |
+|------|--------------|
+| **HUD** | Futuristic glassmorphism dashboard — system stats, live console, AI core, themes (cyan/gold/red/…), mode chip |
+| **Modes** | `ai`, `humanoid`, `gaming`, `dev`, `chill`, `focus`, `creative`, `offline` — each with its own persona, accent color, icon and TTS voice |
+| **Voice** | Real speech-to-text (Vosk, offline) + natural text-to-speech (Edge TTS). Say *"hey aether"* |
+| **Hotkeys** | Global `Alt+F1…F8` — summon HUD, voice, screenshot, cycle mode, lock PC, status, hub, quick popup. All rebindable, work in any app |
+| **Quick Popup** | Claude macOS-style floating panel (default `Alt+F8`) near your cursor — logo, mode, one-tap actions |
+| **System Tray** | Background presence: status tooltip, Summon/Quit without hotkeys |
+| **Start with Windows** | Real per-user registry `Run` key, installed from Settings |
+| **Memory** | JSON-backed long-term memory + session summaries + keyword search |
+| **Plugins & Gateway** | Plugin loader (system-probe, web-fetch) + multi-provider LLM gateway |
+| **Remote Control** | Phone app (`AetherRemote.apk`) pairs over LAN — discover, pair, open apps, lock, status, screenshot |
+| **ScanGuard** | Double-extension & magic-byte scanner (Windows exe + Android APK) |
+| **Phone tools** | `phone.sh` + `PHONE.md` — scrcpy/ADB helpers to mirror & control your phone from the PC |
 
 ---
 
-## Voice (Planned)
+## 🚀 Quick Start — the EXE (no Python, no pip)
 
-- Speech Recognition
-- pyttsx3
-- Faster Whisper
-- Edge TTS
+1. Download **`A3THER-windows-x64.zip`** from the [latest release](https://github.com/al13n-x-v0x/a3ther/releases/latest).
+2. Extract it anywhere and run **`A3THER.exe`**.
+3. The HUD opens in your browser at `http://localhost:8000` (native window mode also available).
+4. First run **auto-installs** the optional voice deps it needs (`vosk`, `edge-tts`, …) — no manual pip.
+5. The Vosk STT model (~40 MB) downloads once on first voice use.
+6. No LLM key? It falls back to local **Ollama** — or pick a provider in Settings.
 
----
-
-## System Integration (Planned)
-
-- psutil
-- subprocess
-- pathlib
+> 🔒 Nothing is bundled with your keys. API keys live in `%LOCALAPPDATA%\A3THER\` — never in the repo or the exe.
 
 ---
 
-# 📂 Current Project Structure
+## 🛠 Setup from Git (for developers)
 
-```
-A3THER/
+```bash
+# 1. Clone
+git clone https://github.com/al13n-x-v0x/a3ther.git
+cd a3ther
 
-index.html
-style.css
-script.js
+# 2. Create a venv (Python 3.10+ recommended)
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Linux/macOS (partial support)
 
-README.md
+# 3. Install core deps
+pip install -r requirements.txt
 
-assets/
-│
-├── icons/
-├── images/
-├── fonts/
-├── textures/
-├── models/
-└── sounds/
-
-docs/
-
-future/
-
+# 4. Run
+python launcher.py              # full app (server + HUD + hotkeys + tray)
+python launcher.py --background # hidden, summon with Alt+F1 or the tray
+python main.py                  # boot engine only (no browser HUD)
 ```
 
----
+**Optional extras** (auto-installed by the app on first run, installable manually):
 
-# 🚀 Development Roadmap
+```bash
+pip install vosk edge-tts sounddevice pystray pillow
+```
 
-# Phase 1
+### First-run setup
 
-## Futuristic Dashboard
+```bash
+python -m core.first_run        # pick your LLM provider & key (or Enter for offline/Ollama)
+```
 
-Current Phase
-
-Features
-
-- Main HUD
-- Navigation
-- Left System Panel
-- Center AI Core
-- Right Information Panel
-- Bottom Dock
-- Live Console
-- Responsive Layout
-- Animated Interface
-- Glassmorphism
-- Neon Theme
+Or just launch the app and press **Enter** to skip — it runs offline with Ollama.
 
 ---
 
-# Phase 2
+## 🎮 Using A.3.T.H.E.R.
 
-## Interactive Dashboard
+### Global hotkeys (work in any app, even in the background)
 
-Features
+| Key | Action |
+|-----|--------|
+| `Alt+F1` | Summon / hide the HUD |
+| `Alt+F2` | Toggle voice input |
+| `Alt+F3` | Take a screenshot |
+| `Alt+F4` | Cycle mode (humanoid → gaming → dev → …) |
+| `Alt+F5` | Lock the PC |
+| `Alt+F6` | Show status |
+| `Alt+F7` | Open the Hub |
+| `Alt+F8` | Quick popup (Claude-style) |
 
-- Working Navigation
-- Functional Console
-- Live Clock
-- Animated Notifications
-- Fake Hardware Stats
-- Dynamic Cards
-- Search
-- Settings Panel
-- Themes
+All rebindable in **Settings → Global Hotkeys**. Fn-key laptops: `Fn+Alt+F1` etc. `AltGr` behaves as right-Alt for the same bindings.
 
----
+### System tray
+Right-click the **A3THER** icon (cyan "A") in the notification area for Summon HUD · Toggle Voice · Cycle Mode · Screenshot · Status · Quit.
 
-# Phase 3
+### Start with Windows
+**Settings → Background & Startup → Start with Windows** — installs a real `HKCU\...\CurrentVersion\Run` entry so A.3.T.H.E.R. boots hidden and waits for `Alt+F1` or the tray.
 
-## Electron Desktop
-
-Features
-
-- Native Window
-- Desktop Installation
-- Auto Updates
-- Window Controls
-- Tray Icon
-- Startup Support
+### Phone remote control
+1. `python launcher.py` on the laptop.
+2. Install **`AetherRemote.apk`** (from the `remote_app` release / `dist/`) on your phone — same Wi-Fi.
+3. Phone → *Find laptop* → enter the 6-digit code shown on the laptop → *Pair*.
+4. Control: Status · Open Chrome · Open Notepad · Lock — straight from the phone.
 
 ---
 
-# Phase 4
-
-## AI Integration
-
-Features
-
-- Gemini API
-- OpenAI API
-- Local Models
-- AI Chat
-- Context Memory
-- Conversations
-- Prompt Templates
-
----
-
-# Phase 5
-
-## Voice Assistant
-
-Features
-
-- Wake Word
-- Voice Recognition
-- Text To Speech
-- Voice Commands
-- Multiple Voices
-- English
-- Hindi
-- Hinglish
-
----
-
-# Phase 6
-
-## System Automation
-
-Features
-
-- Launch Applications
-- Open Files
-- Search Files
-- Terminal Commands
-- Automation Engine
-- Safe Execution Layer
-
----
-
-# Phase 7
-
-## Hardware Monitoring
-
-Features
-
-- CPU
-- GPU
-- RAM
-- Storage
-- Temperature
-- Network
-- Battery
-- Processes
-
----
-
-# Phase 8
-
-## AI Core
-
-Features
-
-- 3D Globe
-- Three.js Rendering
-- Live Connections
-- Particles
-- Device Nodes
-- Animated Orbits
-- Neural Network Visualization
-
----
-
-# 🎨 Design Style
-
-The interface follows a futuristic design inspired by advanced AI systems.
-
-Primary Colors
-
-- Electric Blue
-- Neon Cyan
-- Gold
-- Amber
-- Deep Black
-
-Design Elements
-
-- Glassmorphism
-- Neon Borders
-- Glow Effects
-- Animated Gradients
-- Floating Panels
-- Circular HUD Elements
-- Futuristic Typography
-
----
-
-# 📦 Future Backend Structure
+## 🏗 Architecture
 
 ```
-backend/
+core/            hotkeys, tray, popup, startup, modes, ui_settings, auto_deps,
+                 engine state, desktop window, first-run
+backend/         FastAPI server, AI brain, gateway, features API, plugins
+voice/           STT (Vosk) + TTS (Edge) pipeline, wake-word engine
+memory/          long-term memory manager + orchestrator (keyword search)
+config/          settings store + paths + API-key management
+actions/         open_app, web_search, weather, system monitor, browser/computer
+                 control, file controller, youtube, send_message
+Frontend/        the HUD — index.html, script.js, style.css (+ phone, hub, plugins)
+remote_dev/      LAN remote-control server: pairing, discovery, commands
+remote_app/      Toga phone client → AetherRemote.apk
+scan_apk/        ScanGuard scanner → Windows exe + Android APK
+```
 
-ai/
-voice/
-system/
-database/
-automation/
+**Backend**: Python + FastAPI + uvicorn. **HUD**: vanilla HTML/CSS/JS (no framework — fast and light). **Voice**: Vosk (offline STT) + Edge TTS. **LLMs**: Ollama local, or OpenAI / DeepSeek / Gemini / Groq / Anthropic.
 
+---
+
+## 🔨 Building the EXE
+
+```bash
+pip install pyinstaller
+pyinstaller a3ther.spec --noconfirm
+# → dist/A3THER/A3THER.exe (onedir; bundles Python + all deps + Vosk DLLs)
+```
+
+Build the phone APK:
+
+```bash
+cd remote_app && briefcase build android  # or use the prebuilt AetherRemote.apk
 ```
 
 ---
 
-# 📜 Current Status
+## 📜 Status
 
 | Component | Status |
 |-----------|--------|
-| HTML | ✅ In Development |
-| CSS | 🟡 In Progress |
-| JavaScript | 🟡 In Progress |
-| Electron | ⏳ Planned |
-| Python Backend | ⏳ Planned |
-| AI Chat | ⏳ Planned |
-| Voice Assistant | ⏳ Planned |
-| Hardware Monitoring | ⏳ Planned |
-| Automation | ⏳ Planned |
-| Plugins | ⏳ Planned |
+| HUD + themes + modes | ✅ Live |
+| Voice (STT/TTS, wake word) | ✅ Live (offline STT, Edge TTS) |
+| Global hotkeys | ✅ Live (rebindable) |
+| System tray + quick popup | ✅ Live |
+| Start with Windows | ✅ Live (registry) |
+| Memory + plugins + gateway | ✅ Live |
+| Phone remote control (LAN) | ✅ Phase-1 live |
+| ScanGuard scanner | ✅ Live (exe + APK) |
+| Screen streaming / full remote desktop | 🚧 Roadmap (real, not faked) |
+
+See [`REMOTE.md`](REMOTE.md) for the honest remote-control roadmap.
 
 ---
 
-# 📋 Future Features
+## ⚠️ Disclaimer
 
-- AI Chat
-- AI Memory
-- Smart Search
-- Plugin Manager
-- Device Control
-- Weather
-- Calendar
-- Notifications
-- Live Console
-- Voice Waveform
-- AI Globe
-- Theme System
-- File Explorer
-- Task Automation
-- AI Vision
-- AI Coding Assistant
-- Multi-Model AI Support
+A.3.T.H.E.R. is an original software project created by **AL13N Industries**. Some visual inspiration comes from futuristic HUD concepts and science-fiction interfaces. All code, architecture, and UI are independently developed for this project.
+
+The ScanGuard scanner and remote-control features are **security tooling for your own devices** — use them ethically and only on systems you own or are authorized to test.
 
 ---
 
-# ⚠ Disclaimer
+## 👨‍💻 Created By
 
-A.3.T.H.E.R. is an original software project created by **AL13N Industries**.
-
-Some visual inspiration comes from futuristic HUD concepts and science-fiction interfaces. All code, architecture, UI implementation, and project structure are independently developed for this project.
-
----
-
-# 👨‍💻 Created By
-
-**AL13N Industries**
-
-Project:
-
-**A.3.T.H.E.R.**
+**AL13N Industries** — **A.3.T.H.E.R.**
 
 **Adaptive 3rd-generation Technology for Heuristic Execution & Research**
 
----
-
-## Version
-
-**v0.1.0-alpha**
-
-Currently under active development.
+**v1.0** — Windows · Local-first · Open Source

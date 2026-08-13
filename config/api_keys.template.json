@@ -1,0 +1,27 @@
+{
+  "openai_api_key": "",
+  "deepseek_api_key": "",
+  "gemini_api_key": "",
+  "groq_api_key": "",
+  "anthropic_api_key": "",
+  "llm_providers": {
+    "openai_api_key": "",
+    "openai_base_url": "",
+    "openai_model": "gpt-4o-mini",
+    "deepseek_api_key": "",
+    "deepseek_model": "deepseek-chat",
+    "gemini_api_key": "",
+    "gemini_model": "gemini-3-flash-preview",
+    "groq_api_key": "",
+    "groq_model": "llama-3.3-70b-versatile",
+    "anthropic_api_key": "",
+    "anthropic_model": "claude-3-5-haiku-latest"
+  },
+  "llm_routing": {
+    "priority": ["openai", "deepseek", "gemini", "groq", "anthropic"],
+    "fallback_enabled": true,
+    "breaker_threshold": 3,
+    "breaker_cooldown_seconds": 30,
+    "request_timeout_seconds": 90
+  }
+}

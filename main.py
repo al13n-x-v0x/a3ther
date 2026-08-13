@@ -345,6 +345,33 @@ def _parent_dead(parent_pid: int) -> bool:
         return False
 
 
+def _start_tray(server, child=None) -> bool:
+    """Start the system-tray icon; Quit stops the server cleanly.
+
+    In window mode ``child`` is the HUD-window subprocess — quitting from the
+    tray closes it too, so ``child.wait()`` in amain() returns and the whole
+    app winds down. Returns True when the icon is actually running.
+    """
+    try:
+        from core.tray import start_tray
+
+        def _on_quit() -> None:
+            server.should_exit = True
+            if child is not None and child.poll() is None:
+                try:
+                    child.kill()
+                except Exception:  # noqa: BLE001
+                    pass
+
+        ok = start_tray(on_quit=_on_quit)
+        if ok:
+            log("[A3THER] tray icon armed — right-click for status, summon & quit")
+        return ok
+    except Exception as exc:  # noqa: BLE001
+        log(f"[A3THER] tray icon unavailable: {exc}")
+        return False
+
+
 def _window_host(args: argparse.Namespace) -> int:
     """Subprocess entry: owns the native HUD window — and *only* that.
 
@@ -384,6 +411,41 @@ async def amain(args: argparse.Namespace) -> int:
         print("╚════════════════════════════════════════════╝")
 
     _bootstrap()
+
+    # Self-healing optional deps (vosk / edge-tts / miniaudio) — the exe
+    # installs what it needs once, so the user never touches pip.
+    try:
+        from core.auto_deps import ensure_optional_deps
+
+        ensure_optional_deps()
+    except Exception as exc:  # noqa: BLE001
+        log(f"[A3THER] auto-deps skipped: {exc}")
+
+    # Global hotkeys (Alt+F-keys) — armed for the app's whole lifetime, so
+    # background mode stays controllable from anywhere.
+    if not args.no_hotkeys:
+        try:
+            from core.hotkeys import start_hotkeys
+
+            if start_hotkeys():
+                log("[A3THER] global hotkeys armed — Alt+F1..F7 (rebind in Settings)")
+        except Exception as exc:  # noqa: BLE001
+            log(f"[A3THER] global hotkeys unavailable: {exc}")
+
+    # Background mode: honor the persisted Settings preference unless the
+    # user explicitly passed --background or wants the visible window.
+    if not args.background and not args.no_window and not args.headless:
+        try:
+            from core.ui_settings import get_ui_setting
+
+            args.background = bool(get_ui_setting("background", False))
+        except Exception:  # noqa: BLE001
+            pass
+    if args.background:
+        args.no_window = True
+        args.no_browser = True
+        if not args.headless:
+            log("[A3THER] background mode — HUD hidden, press Alt+F1 to summon")
 
     try:
         from core.engine_state import STATE
@@ -455,6 +517,12 @@ async def amain(args: argparse.Namespace) -> int:
                 log("[window-host]", line.decode("utf-8", "replace").rstrip())
 
         threading.Thread(target=_drain, daemon=True).start()
+
+        # System tray — always on unless --no-tray. Quit shuts the backend
+        # AND closes the HUD window so the app exits completely.
+        if not args.no_tray:
+            _start_tray(server, child)
+
         child.wait()  # blocks until the window subprocess exits
         log(f"HUD window closed — stopping backend (window host exit={child.returncode})")
         server.should_exit = True
@@ -471,6 +539,10 @@ async def amain(args: argparse.Namespace) -> int:
     # ------------------------------------------------------------------ #
     # Headless / --no-window: serve in-process, browser open optional.
     # ------------------------------------------------------------------ #
+    # System tray (also in headless / background): status + summon + quit.
+    if not args.no_tray:
+        _start_tray(server)
+
     if not args.headless:
         print(f"[A3THER] HUD: http://127.0.0.1:{args.port}/")
         import launcher  # noqa: PLC0415
@@ -500,6 +572,9 @@ def main() -> int:
     parser.add_argument("--headless", action="store_true", help="server only, minimal output")
     parser.add_argument("--window-host", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--usb-interval", type=float, default=2.0, help="USB poll interval (s)")
+    parser.add_argument("--background", action="store_true", help="run hidden — summon with Alt+F1")
+    parser.add_argument("--no-hotkeys", action="store_true", help="disable global hotkeys")
+    parser.add_argument("--no-tray", action="store_true", help="disable the system-tray icon")
     args = parser.parse_args()
     if args.window_host:
         return _window_host(args)

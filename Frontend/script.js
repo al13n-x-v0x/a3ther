@@ -1011,7 +1011,7 @@
           </article>`).join("");
       }
     },
-    settings() {
+    async settings() {
       const body = Overlay.open("SETTINGS", `
         <div class="settings-section">
           <h4>LLM API KEY</h4>
@@ -1133,6 +1133,59 @@
             <input type="range" id="set-poll-range" min="1500" max="12000" step="500" value="${Settings.pollMs}" />
           </div>
           <p class="settings-note" id="set-poll-label">Every ${(Settings.pollMs / 1000).toFixed(1)}s</p>
+        </div>
+
+        <div class="settings-section">
+          <h4>IDENTITY — CUSTOM NAME &amp; TAGLINE</h4>
+          <div class="settings-row">
+            <label>Assistant name<small>what A3THER calls itself — used in the HUD title, banner and AI prompt</small></label>
+            <input class="settings-text-input" id="set-name-input" type="text" maxlength="40" placeholder="A.3.T.H.E.R." autocomplete="off" />
+          </div>
+          <div class="settings-row">
+            <label>Tagline<small>the one-liner under the name</small></label>
+            <input class="settings-text-input" id="set-tagline-input" type="text" maxlength="120" placeholder="Adaptive 3rd-generation Technology…" autocomplete="off" />
+          </div>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-identity-save"><i class="fa-solid fa-signature"></i> Save Name &amp; Tagline</button>
+            <button class="settings-btn" id="set-identity-reset"><i class="fa-solid fa-rotate-left"></i> Reset Defaults</button>
+          </div>
+          <p class="settings-note" id="set-identity-status">Applies to the HUD immediately; the brain uses it from the next reply.</p>
+        </div>
+
+        <div class="settings-section">
+          <h4>MODE</h4>
+          <p class="settings-note">Pick A3THER's persona — the accent theme, voice tone and icon follow the mode.</p>
+          <div class="settings-grid" id="set-mode-grid"></div>
+          <p class="settings-note" id="set-mode-status">Loading modes…</p>
+        </div>
+
+        <div class="settings-section">
+          <h4>GLOBAL HOTKEYS</h4>
+          <p class="settings-note">Work in the background — these fire from any app, even with the HUD hidden (Windows).</p>
+          <div id="set-hotkeys-list"></div>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-hotkeys-save"><i class="fa-solid fa-floppy-disk"></i> Save Hotkeys</button>
+            <button class="settings-btn" id="set-hotkeys-reset"><i class="fa-solid fa-rotate-left"></i> Reset Defaults</button>
+          </div>
+          <p class="settings-note" id="set-hotkeys-status">Alt+F1 HUD · Alt+F2 Voice · Alt+F3 Screenshot · Alt+F4 Cycle mode · Alt+F5 Lock · Alt+F8 Popup</p>
+        </div>
+
+        <div class="settings-section">
+          <h4>BACKGROUND &amp; STARTUP</h4>
+          <div class="settings-row">
+            <label>Start hidden<small>run in the background without the HUD window — summon anytime with Alt+F1</small></label>
+            <span class="toggle ${Settings.background ? "on" : ""}" id="set-bg-toggle" role="switch" aria-checked="${Settings.background}"></span>
+          </div>
+          <p class="settings-note" id="set-bg-status">Takes effect next launch (hotkeys work regardless).</p>
+          <div class="settings-row" style="margin-top:10px">
+            <label>Start with Windows<small>boots A3THER at login via a registry Run entry — no admin needed</small></label>
+            <span class="toggle ${Settings.startup ? "on" : ""}" id="set-startup-toggle" role="switch" aria-checked="${Settings.startup}"></span>
+          </div>
+          <p class="settings-note" id="set-startup-status">Checking…</p>
+          <div class="settings-grid" style="margin-top:8px">
+            <button class="settings-btn" id="set-popup-test"><i class="fa-solid fa-wand-magic-sparkles"></i> Test Quick Popup</button>
+            <button class="settings-btn" id="set-popup-hotkey" type="button"><i class="fa-solid fa-keyboard"></i> Alt+F8 pops it up</button>
+          </div>
         </div>
 
         <div class="settings-section">
@@ -1497,6 +1550,178 @@
         globeToggle.setAttribute("aria-checked", String(Settings.globe));
         Toasts.ok(Settings.globe ? "Globe rotation enabled." : "Globe rotation paused.");
       });
+
+      // identity — custom name + tagline, persisted via /api/settings/ui
+      const nameInput = body.querySelector("#set-name-input");
+      const taglineInput = body.querySelector("#set-tagline-input");
+      const identityStatus = body.querySelector("#set-identity-status");
+      if (nameInput && taglineInput) {
+        const ui0 = await API.get("/api/settings/ui");
+        if (ui0 && !ui0.error) {
+          nameInput.value = ui0.assistant_name || "";
+          taglineInput.value = ui0.tagline || "";
+        }
+        const applyIdentity = async (name, tagline) => {
+          const r = await API.post("/api/settings/ui", { assistant_name: name, tagline });
+          if (r && !r.error) {
+            Branding.setIdentity(name, tagline);
+            identityStatus.textContent = `✓ Saved — the HUD now calls it “${name}”.`;
+            Toasts.ok("Name & tagline saved.");
+            return true;
+          }
+          identityStatus.textContent = "✘ Could not save (backend offline?).";
+          return false;
+        };
+        body.querySelector("#set-identity-save").addEventListener("click", () => {
+          applyIdentity((nameInput.value || "").trim(), (taglineInput.value || "").trim());
+        });
+        body.querySelector("#set-identity-reset").addEventListener("click", async () => {
+          const r = await applyIdentity("A.3.T.H.E.R.", "Adaptive 3rd-generation Technology for Heuristic Execution & Research");
+          if (r) {
+            nameInput.value = "A.3.T.H.E.R.";
+            taglineInput.value = "Adaptive 3rd-generation Technology for Heuristic Execution & Research";
+          }
+        });
+      }
+
+      // mode grid — real buttons from /api/modes, switch + re-theme + persist
+      const modeGrid = body.querySelector("#set-mode-grid");
+      const modeStatus = body.querySelector("#set-mode-status");
+      if (modeGrid) {
+        const modes = await API.get("/api/modes");
+        const order = (modes && !modes.error && modes.available) || [];
+        if (!order.length) {
+          modeStatus.textContent = "Modes unavailable — backend offline.";
+        } else {
+          const currentKey = (modes && modes.current && modes.current.key) || "";
+          const metaMap = {};
+          if (modes && modes.meta) {
+            Object.entries(modes.meta).forEach(([k, md]) => { metaMap[k] = md; });
+          }
+          if (modes && modes.current && modes.current.key && !metaMap[modes.current.key]) {
+            metaMap[modes.current.key] = modes.current;
+          }
+          const nameOf = (k) => (metaMap[k] && metaMap[k].name) || k.charAt(0).toUpperCase() + k.slice(1);
+          modeGrid.innerHTML = order.map((k) => {
+            const active = k === currentKey;
+            const icon = k === "humanoid" ? "fa-face-smile" : k === "gaming" ? "fa-gamepad" : k === "dev" ? "fa-code" : k === "research" ? "fa-flask" : k === "chill" ? "fa-mug-hot" : k === "mentor" ? "fa-user-tie" : k === "angry" ? "fa-fire-flame-curved" : "fa-microchip";
+            return `<button class="settings-btn mode-option ${active ? "mode-active" : ""}" data-mode="${k}"><i class="fa-solid ${icon}"></i> ${nameOf(k)}</button>`;
+          }).join("");
+          modeStatus.textContent = `Current: ${nameOf(currentKey)} — the accent theme follows the mode.`;
+          modeGrid.querySelectorAll(".mode-option").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const ok = await Modes.set(btn.dataset.mode);
+              if (ok) {
+                modeGrid.querySelectorAll(".mode-option").forEach((b) => b.classList.remove("mode-active"));
+                btn.classList.add("mode-active");
+                modeStatus.textContent = `Current: ${btn.textContent.trim()} — saved.`;
+              }
+            });
+          });
+        }
+      }
+
+      // hotkeys — real /api/hotkeys, editable specs, save re-arms live
+      const hotkeysList = body.querySelector("#set-hotkeys-list");
+      const hotkeysStatus = body.querySelector("#set-hotkeys-status");
+      const hkData = await HotkeysUI.refresh();
+      const hkBindings = (hkData && hkData.bindings) || {};
+      const hkCatalog = (hkData && hkData.catalog) || {};
+      if (hotkeysList && Object.keys(hkCatalog).length) {
+        const DEFAULTS = {
+          toggle_hud: "Alt+F1", toggle_voice: "Alt+F2", screenshot: "Alt+F3",
+          cycle_mode: "Alt+F4", lock_pc: "Alt+F5", status: "Alt+F6", open_hub: "Alt+F7",
+          show_popup: "Alt+F8"
+        };
+        hotkeysList.innerHTML = Object.entries(hkCatalog).map(([action, desc]) => `
+          <div class="settings-row">
+            <label>${action.replace(/_/g, " ").toUpperCase()}<small>${desc}</small></label>
+            <input class="settings-text-input hotkey-input" data-action="${action}" value="${(hkBindings[action] || DEFAULTS[action] || "").replace(/"/g, "&quot;")}" placeholder="Alt+F1" autocomplete="off" spellcheck="false" />
+          </div>`).join("");
+        body.querySelector("#set-hotkeys-save").addEventListener("click", async () => {
+          const bindings = {};
+          hotkeysList.querySelectorAll(".hotkey-input").forEach((inp) => {
+            bindings[inp.dataset.action] = (inp.value || "").trim();
+          });
+          const r = await HotkeysUI.save(bindings);
+          if (r && r.ok) {
+            const rej = (r.rejected || []).length;
+            hotkeysStatus.textContent = rej ? `Saved — ${rej} rejected (format: Alt+F5).` : "Saved & re-armed live.";
+          }
+        });
+        body.querySelector("#set-hotkeys-reset").addEventListener("click", async () => {
+          const r = await HotkeysUI.save(DEFAULTS);
+          if (r && r.ok) {
+            hotkeysList.querySelectorAll(".hotkey-input").forEach((inp) => {
+              inp.value = DEFAULTS[inp.dataset.action] || "";
+            });
+            hotkeysStatus.textContent = "Defaults restored & re-armed.";
+          }
+        });
+      } else if (hotkeysList) {
+        hotkeysList.innerHTML = `<p class="settings-note">Hotkeys unavailable (backend offline).</p>`;
+      }
+
+      // background mode toggle → persisted for next launch
+      const bgToggle = body.querySelector("#set-bg-toggle");
+      const bgStatus = body.querySelector("#set-bg-status");
+      if (bgToggle) {
+        // load current persisted value
+        const ui = await API.get("/api/settings/ui");
+        const bg = ui && !ui.error ? !!ui.background : Settings.background;
+        bgToggle.classList.toggle("on", bg);
+        bgToggle.setAttribute("aria-checked", String(bg));
+        bgToggle.addEventListener("click", async () => {
+          const on = !bgToggle.classList.contains("on");
+          bgToggle.classList.toggle("on", on);
+          bgToggle.setAttribute("aria-checked", String(on));
+          const r = await API.post("/api/settings/ui", { background: on });
+          bgStatus.textContent = on ? "Hidden start enabled — next launch runs in background (Alt+F1 to summon)." : "Hidden start disabled — HUD opens at launch.";
+          Toasts.ok(on ? "Background mode enabled." : "Background mode disabled.");
+        });
+      }
+
+      // Start-with-Windows — REAL registry Run entry (installed live, no restart)
+      const startupToggle = body.querySelector("#set-startup-toggle");
+      const startupStatus = body.querySelector("#set-startup-status");
+      if (startupToggle) {
+        const ui = await API.get("/api/settings/ui");
+        const st = ui && !ui.error ? !!ui.startup : Settings.startup;
+        startupToggle.classList.toggle("on", st);
+        startupToggle.setAttribute("aria-checked", String(st));
+        const cmd = (ui && !ui.error && ui.startup_command) || "";
+        startupStatus.textContent = st
+          ? `✓ Enabled — A3THER runs at login${cmd ? ` (${cmd})` : ""}`
+          : "Not installed — A3THER starts manually.";
+        startupToggle.addEventListener("click", async () => {
+          const on = !startupToggle.classList.contains("on");
+          startupToggle.classList.toggle("on", on);
+          startupToggle.setAttribute("aria-checked", String(on));
+          const r = await API.post("/api/settings/ui", { startup: on });
+          const nowOn = r && !r.error ? !!r.startup : on;
+          const err = r && r.error ? r.error : (r && r.startup_error) || "";
+          startupToggle.classList.toggle("on", nowOn);
+          startupToggle.setAttribute("aria-checked", String(nowOn));
+          Settings.startup = nowOn;
+          Settings.save();
+          const cmd2 = (r && r.startup_command) || "";
+          startupStatus.textContent = err
+            ? `✘ ${err}`
+            : nowOn
+              ? `✓ Enabled — A3THER runs at login${cmd2 ? ` (${cmd2})` : ""}`
+              : "Not installed — A3THER starts manually.";
+          Toasts.ok(err ? `Startup failed: ${err}` : (nowOn ? "Start with Windows enabled." : "Start with Windows disabled."));
+        });
+      }
+
+      // Quick popup — summon the Claude-style logo overlay (same as Alt+F8)
+      const popupTest = body.querySelector("#set-popup-test");
+      if (popupTest) {
+        popupTest.addEventListener("click", async () => {
+          const r = await API.post("/api/overlay/show", {});
+          Toasts[!r || !r.ok ? "err" : "ok"](!r || !r.ok ? "Popup unavailable — tkinter missing?" : "Popup shown — Esc to hide.");
+        });
+      }
     }
   };
 
@@ -2788,6 +3013,134 @@
   };
 
   /* =========================================================
+     MODES — real mode registry from /api/modes. The topbar chip
+     cycles humanoid → gaming → dev → …, the accent color and icon
+     follow the mode, and changes persist via /api/settings/ui.
+  ========================================================= */
+  const Modes = {
+    order: [],
+    meta: {},       // key → {name, vibe, accent, icon}
+    current: "ai",
+    async init() {
+      await this.refresh();
+      const chip = $("#mode-cycle");
+      if (chip) chip.addEventListener("click", () => this.cycle());
+    },
+    async refresh() {
+      const d = await API.get("/api/modes");
+      if (d && !d.error && Array.isArray(d.available)) {
+        this.order = d.available;
+        this.meta = {};
+        const metaList = d.meta || {};
+        d.available.forEach((k) => {
+          this.meta[k] = {
+            name: (metaList[k] && metaList[k].name) || k.toUpperCase(),
+            vibe: (metaList[k] && metaList[k].vibe) || "",
+            accent: (metaList[k] && metaList[k].accent) || ["#00D2FF", "#FF9900"],
+            icon: (metaList[k] && metaList[k].icon) || "fa-microchip"
+          };
+        });
+        if (d.current && d.current.key) this.current = d.current.key;
+        this.render();
+      }
+    },
+    render() {
+      const meta = this.meta[this.current] || { name: this.current.toUpperCase(), vibe: "", accent: ["#00D2FF", "#FF9900"], icon: "fa-microchip" };
+      const chip = $("#mode-cycle");
+      if (chip) {
+        chip.innerHTML = `<i class="fa-solid ${meta.icon}"></i><span>${meta.name}</span>`;
+        chip.title = `${meta.name} · ${meta.vibe || ""} — click to cycle`;
+        chip.style.setProperty("--mode-accent", meta.accent[0]);
+      }
+      // HUD re-theme follows the mode accent.
+      document.documentElement.style.setProperty("--cyan", meta.accent[0]);
+      document.documentElement.style.setProperty("--orange", meta.accent[1]);
+      const pill = $(".status-pill.ok");
+    },
+    async cycle() {
+      if (!this.order.length) { await this.refresh(); return; }
+      const i = this.order.indexOf(this.current);
+      const next = this.order[(i + 1) % this.order.length];
+      const d = await API.post("/api/mode", { mode: next });
+      if (d && !d.error && d.mode) {
+        this.current = d.mode;
+        // persist so it survives restarts (server also saves it)
+        await API.post("/api/settings/ui", { mode: d.mode });
+        this.refresh();
+        const meta = d.metadata || {};
+        Toasts.ok(`Mode: ${meta.name || d.mode} — ${meta.vibe || ""}`);
+      } else {
+        Toasts.err("Mode switch failed — backend offline?");
+      }
+    },
+    async set(key) {
+      const d = await API.post("/api/mode", { mode: key });
+      if (d && !d.error && d.mode) {
+        this.current = d.mode;
+        await API.post("/api/settings/ui", { mode: d.mode });
+        this.refresh();
+        Toasts.ok(`Mode set: ${d.metadata?.name || key}`);
+        return true;
+      }
+      Toasts.err("Mode switch failed.");
+      return false;
+    }
+  };
+
+  /* =========================================================
+     HOTKEYS — real bindings from /api/hotkeys, re-armed live
+  ========================================================= */
+  const HotkeysUI = {
+    catalog: {},
+    async refresh() {
+      const d = await API.get("/api/hotkeys");
+      if (d && !d.error) {
+        this.catalog = d.catalog || {};
+        return d;
+      }
+      return null;
+    },
+    async save(bindings) {
+      const d = await API.post("/api/hotkeys", { bindings });
+      if (d && d.ok) {
+        const rej = (d.rejected || []).length;
+        Toasts.ok(rej ? `Hotkeys saved — ${rej} rejected.` : "Hotkeys saved & re-armed.");
+        return d;
+      }
+      Toasts.err("Could not save hotkeys.");
+      return null;
+    }
+  };
+
+  /* =========================================================
+     BRANDING — custom assistant name + tagline from /api/settings/ui.
+     Updates the topbar title, eyebrow, and browser tab live.
+  ========================================================= */
+  const Branding = {
+    name: "A.3.T.H.E.R.",
+    tagline: "Adaptive 3rd-generation Technology for Heuristic Execution & Research",
+    async init() {
+      const ui = await API.get("/api/settings/ui");
+      if (ui && !ui.error && ui.assistant_name) this.setIdentity(ui.assistant_name, ui.tagline);
+    },
+    setIdentity(name, tagline) {
+      this.name = name || this.name;
+      if (tagline) this.tagline = tagline;
+      const titleEl = $("#title h1");
+      if (titleEl) titleEl.textContent = this.name;
+      const eyebrow = $("#title .eyebrow");
+      if (eyebrow) eyebrow.textContent = "MADE BY AL13N INDUSTRIES";
+      const desc = $("#title p:last-child");
+      if (desc && this.tagline) desc.textContent = this.tagline;
+      document.title = `${this.name} — AL13N Industries`;
+      const globeLabel = $(".globe-core-label span");
+      if (globeLabel) globeLabel.textContent = this.name;
+      const voiceTitle = $("#voice-title");
+      if (voiceTitle) voiceTitle.textContent = "Listening";
+    }
+  };
+
+  /* =========================================================
      SETTINGS — persisted in localStorage, applied on boot
   ========================================================= */
   const Settings = {
@@ -2797,6 +3150,7 @@
     pollMs: 3000,
     globe: true,
     weatherCity: "",
+    startup: false,
     load() {
       try {
         const raw = JSON.parse(localStorage.getItem(this.key) || "{}");
@@ -2805,6 +3159,7 @@
         if (raw.pollMs >= 1500) this.pollMs = raw.pollMs;
         if (typeof raw.globe === "boolean") this.globe = raw.globe;
         if (typeof raw.weatherCity === "string") this.weatherCity = raw.weatherCity;
+        if (typeof raw.startup === "boolean") this.startup = raw.startup;
       } catch (_) { /* corrupted settings → defaults */ }
     },
     save() {
@@ -2814,7 +3169,8 @@
           theme: this.theme,
           pollMs: this.pollMs,
           globe: this.globe,
-          weatherCity: this.weatherCity
+          weatherCity: this.weatherCity,
+          startup: this.startup
         }));
       } catch (_) { /* storage full/blocked — ignore */ }
     },
@@ -2840,6 +3196,8 @@
   const init = () => {
     Settings.apply();
     Boot.init();
+    Branding.init();
+    Modes.init();
     Toasts.init();
     Clock.init();
     Telemetry.init();

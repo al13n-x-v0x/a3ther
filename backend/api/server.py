@@ -124,6 +124,22 @@ class VoiceSettingsRequest(BaseModel):
     voice: str | None = None
 
 
+class UISettingsRequest(BaseModel):
+    theme: list[str] | None = None
+    theme_name: str | None = None
+    assistant_name: str | None = None
+    tagline: str | None = None
+    mode: str | None = None
+    poll_ms: int | None = None
+    globe: bool | None = None
+    background: bool | None = None
+    startup: bool | None = None
+
+
+class HotkeysRequest(BaseModel):
+    bindings: dict[str, str]
+
+
 # ===============================
 # RESPONSE FORMAT
 # ===============================
@@ -241,15 +257,185 @@ def Chat(data:ChatRequest):
 
 @app.get("/api/modes")
 def GetModes():
-    try:
-        from backend.ai.brain import GetAvailableModes, GetModeMetadata
+    """Available modes + per-mode metadata + current mode + live settings.
 
+    The ``meta`` map gives the HUD everything it needs to re-theme per mode
+    (accent colors, icon, vibe) without N round-trips.
+    """
+    try:
+        from core.modes import ModeManager, MODE_UI_META
+
+        mgr = ModeManager()
+        # Prefer the persisted UI-mode from Settings so the HUD opens in the
+        # same mode the user last chose (survives restarts).
+        try:
+            from core.ui_settings import get_ui_setting
+
+            saved = get_ui_setting("mode") or ""
+            if saved in mgr.available_modes():
+                mgr.set_mode(saved)
+        except Exception:  # noqa: BLE001
+            pass
+        available = mgr.available_modes()
+        meta = {k: mgr.get_mode_metadata(k) for k in available}
         return {
-            "available": GetAvailableModes(),
-            "current": GetModeMetadata(),
+            "available": available,
+            "current": mgr.get_mode_metadata(),
+            "meta": meta,
         }
     except Exception as error:
+        # Last-resort fallback: modes work even when the brain can't init.
+        try:
+            from core.modes import ModeManager
+
+            mgr = ModeManager()
+            available = mgr.available_modes()
+            meta = {k: mgr.get_mode_metadata(k) for k in available}
+            return {
+                "available": available,
+                "current": mgr.get_mode_metadata(),
+                "meta": meta,
+            }
+        except Exception as error2:  # noqa: BLE001
+            return {"error": str(error2)}
+
+
+@app.get("/api/settings/ui")
+def UISettingsGet():
+    """Full persisted UI settings (theme, mode, poll, background, hotkeys).
+
+    The ``startup`` flag reflects the REAL registry state (HKCU Run key), not
+    just the stored JSON, so the Settings toggle shows the truth.
+    """
+    try:
+        from core.ui_settings import get_ui_settings
+        from core.startup import get_startup
+
+        settings = get_ui_settings()
+        settings["startup"] = get_startup()
+        settings["startup_supported"] = True
+        settings["startup_command"] = ""
+        try:
+            from core.startup import _command_line
+
+            settings["startup_command"] = _command_line() if settings["startup"] else ""
+        except Exception:  # noqa: BLE001
+            pass
+        return settings
+    except Exception as error:  # noqa: BLE001
         return {"error": str(error)}
+
+
+@app.post("/api/settings/ui")
+def UISettingsSave(data: UISettingsRequest):
+    """Persist UI settings from the HUD Settings panel (or hotkey cycle)."""
+    try:
+        from core.ui_settings import save_ui_settings, get_ui_settings
+
+        updates: dict = {}
+        if data.theme is not None:
+            updates["theme"] = [str(c) for c in data.theme[:2]]
+        if data.theme_name is not None:
+            updates["theme_name"] = data.theme_name
+        if data.mode is not None:
+            # Validate against the mode registry before persisting.
+            from core.modes import ModeManager
+
+            mode = ModeManager().set_mode(data.mode)
+            updates["mode"] = mode
+            # Apply live so the brain uses it immediately.
+            try:
+                from backend.ai.brain import SetMode
+
+                SetMode(mode)
+            except Exception:  # noqa: BLE001
+                pass
+        if data.poll_ms is not None:
+            updates["poll_ms"] = max(1000, int(data.poll_ms))
+        if data.globe is not None:
+            updates["globe"] = bool(data.globe)
+        if data.assistant_name is not None:
+            name = data.assistant_name.strip()
+            if name:
+                updates["assistant_name"] = name[:40]
+        if data.tagline is not None:
+            tagline = data.tagline.strip()
+            if tagline:
+                updates["tagline"] = tagline[:120]
+        if data.background is not None:
+            updates["background"] = bool(data.background)
+        if data.startup is not None:
+            updates["startup"] = bool(data.startup)
+            # REAL autostart: install / remove the HKCU Run entry now.
+            try:
+                from core.startup import set_startup
+
+                result = set_startup(bool(data.startup))
+                # Reflect the *actual* registry state, not just the requested one.
+                updates["startup"] = bool(result.get("enabled", bool(data.startup)))
+                updates["startup_command"] = result.get("command", "")
+                updates["startup_error"] = result.get("error", "")
+            except Exception as err:  # noqa: BLE001
+                updates["startup"] = False
+                updates["startup_error"] = str(err)
+        if updates:
+            save_ui_settings(updates)
+        return get_ui_settings()
+    except Exception as error:  # noqa: BLE001
+        return {"ok": False, "error": str(error)}
+
+
+@app.post("/api/overlay/show")
+def OverlayShow():
+    """Show the A3THER quick-launch popup (logo + actions).
+
+    Same call the Alt+F8 hotkey fires — exposed over HTTP so the phone app
+    or the HUD itself can summon the popup too.
+    """
+    try:
+        from core.popup import show
+
+        ok = show()
+        return {"ok": ok, "available": ok}
+    except Exception as error:  # noqa: BLE001
+        return {"ok": False, "error": str(error)}
+
+
+@app.get("/api/hotkeys")
+def HotkeysGet():
+    """Current hotkey bindings + the action catalogue (for the Settings UI)."""
+    try:
+        from core.hotkeys import get_hotkey_manager, ACTION_CATALOG
+
+        return {
+            "bindings": get_hotkey_manager().get_bindings(),
+            "catalog": ACTION_CATALOG,
+            "armed": get_hotkey_manager().running,
+        }
+    except Exception as error:  # noqa: BLE001
+        return {"error": str(error)}
+
+
+@app.post("/api/hotkeys")
+def HotkeysSave(data: HotkeysRequest):
+    """Rebind hotkeys and re-arm the manager live (no restart)."""
+    try:
+        from core.hotkeys import get_hotkey_manager
+
+        mgr = get_hotkey_manager()
+        rejected = mgr.set_bindings(data.bindings)
+        was_running = mgr.running
+        if was_running:
+            mgr.stop()
+        mgr.start()
+        return {
+            "ok": True,
+            "bindings": mgr.get_bindings(),
+            "rejected": rejected,
+            "armed": mgr.running,
+        }
+    except Exception as error:  # noqa: BLE001
+        return {"ok": False, "error": str(error)}
 
 
 @app.post("/api/mode")
