@@ -393,11 +393,13 @@
             <span class="status-pill" id="jarvis-pill">…</span>
           </div>
           <label style="display:block;margin-bottom:6px">Image generation<small>OpenAI image model — one prompt, one masterpiece</small></label>
-          <div class="studio-grid" style="grid-template-columns:1fr auto">
+          <div class="studio-grid" style="grid-template-columns:1fr auto auto">
             <input id="jarvis-img-prompt" type="text" placeholder="a cyberpunk city at dusk, neon cyan rain" autocomplete="off" spellcheck="false" />
             <button class="icon-button" id="jarvis-img-go" type="button" title="Generate image"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+            <button class="icon-button" id="jarvis-img-surprise" type="button" title="Surprise me"><i class="fa-solid fa-shuffle"></i></button>
           </div>
           <div class="jarvis-result" id="jarvis-img-result"></div>
+          <div class="jarvis-history" id="jarvis-img-history"></div>
 
           <div class="clips-divider"><span>VISION — LOOK AT THE WORLD</span></div>
           <div class="studio-grid" style="grid-template-columns:1fr auto">

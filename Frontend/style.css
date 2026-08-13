@@ -249,6 +249,24 @@ input { border: none; outline: none; background: none; color: #fff; font-family:
 .ha-entity.on { border-color: rgba(43, 217, 124, .4); }
 .ha-entity.on .ha-dot { background: #2bd97c; box-shadow: 0 0 6px #2bd97c; }
 .ha-entity:active { background: #16263f; }
+.jarvis-history {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.jarvis-history img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(120, 160, 255, .18);
+  cursor: pointer;
+  flex: none;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.jarvis-history img:hover { transform: scale(1.08); border-color: var(--cyan, #00d2ff); }
 
 /* ---- branding ---- */
 #branding { display: flex; align-items: center; gap: 18px; flex: 1 1 320px; }

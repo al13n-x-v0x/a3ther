@@ -72,6 +72,25 @@ def _load_logo_photo(root) -> Optional[object]:
         return None
 
 
+def _gradient(canvas, x0: int, y0: int, w: int, h: int, top: str, bottom: str) -> None:
+    """Vertical color gradient via thin rectangles (no PIL needed)."""
+    try:
+        def _hex(hx):
+            hx = hx.lstrip("#")
+            return tuple(int(hx[i:i + 2], 16) for i in (0, 2, 4))
+
+        t, b = _hex(top), _hex(bottom)
+        strips = 18
+        for i in range(strips):
+            f = i / max(strips - 1, 1)
+            col = tuple(round(t[c] + (b[c] - t[c]) * f) for c in range(3))
+            canvas.create_rectangle(x0, y0 + int(h * i / strips), x0 + w,
+                                    y0 + int(h * (i + 1) / strips) + 1,
+                                    fill=f"#{col[0]:02x}{col[1]:02x}{col[2]:02x}", outline="")
+    except Exception:  # noqa: BLE001
+        canvas.create_rectangle(x0, y0, x0 + w, y0 + h, fill="#0a0f1a", outline="")
+
+
 def _build_root() -> "_tk.Tk":
     root = _tk.Tk()
     root.withdraw()
@@ -85,8 +104,11 @@ def _build_root() -> "_tk.Tk":
 
     canvas = _tk.Canvas(root, width=_WIDTH, height=_HEIGHT, bg=_KEY_COLOR, highlightthickness=0, bd=0)
     canvas.pack(fill="both", expand=True)
-    # Panel.
-    canvas.create_rectangle(2, 2, _WIDTH - 2, _HEIGHT - 2, fill="#0a0f1a", outline="#1b2a44", width=1)
+    # Glass gradient panel — interpolated strips (dark at the bottom,
+    # cyan-tinged at the top) so the popup reads as a lit glass chip.
+    _gradient(canvas, 0, 0, _WIDTH, _HEIGHT, "#12203a", "#060a14")
+    canvas.create_line(4, 3, _WIDTH - 4, 3, fill="#00d2ff", width=1)  # top glow line
+    canvas.create_rectangle(2, 2, _WIDTH - 2, _HEIGHT - 2, outline="#1b2a44", width=1)
 
     # Logo (talking avatar) at the left.
     photo = _load_logo_photo(root)
@@ -105,7 +127,10 @@ def _build_root() -> "_tk.Tk":
         canvas.tag_lower(item)
     canvas.ring_items = rings
 
-    # Name + status.
+    # Name + status — the name gets a soft glow halo behind it.
+    canvas.create_text(
+        104, 26, anchor="w", fill="#123a55", font=("Segoe UI", 14, "bold"), width=4
+    )
     canvas.create_text(
         104, 26, anchor="w", fill="#e8f6ff", font=("Segoe UI", 13, "bold"), text="A.3.T.H.E.R."
     )
@@ -192,7 +217,10 @@ def _target_rect(root) -> tuple[int, int, int, int]:
 
 
 def _slide_in(root, x: int, y: int, w: int, h: int) -> None:
-    """Animate the window in from a random edge (sometimes down, sometimes up)."""
+    """Animate the window in from a random edge (sometimes down, sometimes up).
+
+    Slides AND fades (window alpha) with a smoothstep ease.
+    """
     edge = random.choice(("up", "down", "left", "right"))
     sw = root.winfo_screenwidth()
     sh = root.winfo_screenheight()
@@ -203,7 +231,11 @@ def _slide_in(root, x: int, y: int, w: int, h: int) -> None:
         "right": (sw + 4, y),
     }
     sx, sy = starts[edge]
-    steps = 12
+    steps = 14
+    try:
+        root.attributes("-alpha", 0.0)
+    except Exception:  # noqa: BLE001
+        pass
     for i in range(1, steps + 1):
         t = i / steps
         ease = t * t * (3 - 2 * t)  # smoothstep
@@ -211,10 +243,13 @@ def _slide_in(root, x: int, y: int, w: int, h: int) -> None:
         cy = round(sy + (y - sy) * ease)
         root.geometry(f"{w}x{h}+{cx}+{cy}")
         try:
+            root.attributes("-alpha", round(min(1.0, 0.35 + 0.65 * ease), 2))
+        except Exception:  # noqa: BLE001
+            pass
+        try:
             root.update_idletasks()
         except Exception:  # noqa: BLE001
             pass
-        # Small sleep between steps — non-blocking enough on the Tk thread.
         _tk_root_wait(0.012)
 
 
@@ -228,30 +263,34 @@ def _tk_root_wait(seconds: float) -> None:
 
 
 def _pulse_rings(root, canvas, active: bool) -> None:
-    """Smooth pulse of the voice rings while speaking; still ring otherwise."""
+    """Voice rings: fast & wide while speaking, a slow alive pulse otherwise.
+
+    The loop keeps running while the popup is visible so the avatar always
+    feels "on"; the amplitude/period scale with the speaking state.
+    """
     import math  # noqa: PLC0415
 
     def _frame(i: int = 0) -> None:
         items = getattr(canvas, "ring_items", [])
         cx, cy = 50, 62
-        if not _speaking:
-            for item in items:
-                try:
-                    canvas.coords(item, cx - 14, cy - 14, cx + 14, cy + 14)
-                    canvas.itemconfigure(item, width=1)
-                except Exception:  # noqa: BLE001
-                    pass
+        if not _visible and not _speaking:
             return
-        phase = (i % 30) / 30.0
+        if _speaking:
+            period, base, swing = 30, 16, 26
+            delay = 40
+        else:
+            period, base, swing = 72, 12, 5   # slow idle pulse
+            delay = 60
+        phase = (i % period) / period
         for k, item in enumerate(items):
-            rad = 16 + 24 * (0.5 - 0.5 * math.cos(2 * math.pi * (phase + k * 0.14)))
+            rad = base + swing * (0.5 - 0.5 * math.cos(2 * math.pi * (phase + k * 0.14)))
             try:
                 canvas.coords(item, cx - rad, cy - rad, cx + rad, cy + rad)
                 canvas.itemconfigure(item, width=2 if k == 0 else 1)
             except Exception:  # noqa: BLE001
                 pass
-        if _speaking:
-            root.after(40, lambda: _frame(i + 1))
+        if _visible or _speaking:
+            root.after(delay, lambda: _frame(i + 1))
 
     _frame()
 
@@ -265,13 +304,27 @@ def _show_now(root) -> None:
         root.attributes("-topmost", True)
         _slide_in(root, x, y, w, h)
         _visible = True
-        # If the assistant is talking, make sure the rings are pulsing.
-        if _speaking:
-            canvas = _canvas_of(root)
-            if canvas is not None:
-                _pulse_rings(root, canvas, True)
+        canvas = _canvas_of(root)
+        if canvas is not None:
+            _pulse_rings(root, canvas, _speaking)
     except Exception:  # noqa: BLE001
         _visible = False
+
+
+def _fade_out(root) -> None:
+    """Quick fade before withdrawing (avoids a hard pop-off)."""
+    try:
+        for i in range(5, 0, -1):
+            root.attributes("-alpha", round(i / 5, 2))
+            root.update_idletasks()
+            _tk_root_wait(0.012)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        root.attributes("-alpha", 1.0)
+    except Exception:  # noqa: BLE001
+        pass
+    root.withdraw()
 
 
 def _canvas_of(root) -> Optional[object]:
@@ -336,7 +389,7 @@ def _tk_loop() -> None:
                     if cmd == "show":
                         _show_now(root)
                     elif cmd == "hide":
-                        root.withdraw()
+                        _fade_out(root)
                         _visible = False
                     elif cmd.startswith("say:"):
                         _say_now(root, cmd[4:])
