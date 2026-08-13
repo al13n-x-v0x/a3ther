@@ -1,8 +1,9 @@
 """
-backend/api/jarvis.py — the JARVIS-inspired feature set.
+backend/api/jarvis.py — the A3THER Lab feature set.
 
-Real implementations (no fake prototypes) for the capabilities that turn
-A3THER from a chatbot into an Iron-Man-style assistant:
+Real implementations (no fake prototypes) for the creative + smart-home
+capabilities that turn A3THER from a chatbot into a full assistant
+(internal module name kept as ``jarvis`` for continuity):
 
     POST /api/jarvis/image    generate an image from a prompt (OpenAI images API)
     POST /api/jarvis/camera   capture a frame from the webcam (OpenCV)

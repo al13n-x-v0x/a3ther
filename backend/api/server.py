@@ -30,7 +30,7 @@ from backend.api.extensions import ui_router as extensions_ui_router
 # A3THER features: voice, security, memory, codebase, swarm, website maker
 from backend.api.features import features_router, features_ui_router
 
-# A3THER JARVIS-style features: image gen, camera, vision, Home Assistant
+# A3THER Lab: image gen, camera, vision, Home Assistant
 from backend.api.jarvis import jarvis_router
 
 # A3THER live HUD data: telemetry, devices, weather, location

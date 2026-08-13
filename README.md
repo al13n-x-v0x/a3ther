@@ -30,7 +30,7 @@ It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Gr
 | **Remote Control** | Phone app pairs over LAN/Tailscale — discover, pair, open apps, lock, plus **live screen streaming + touch/keyboard control** of the laptop from the phone, and one-command phone mirroring (scrcpy) |
 | **ScanGuard** | Double-extension & magic-byte scanner (Windows exe + Android APK) |
 | **Phone tools** | `phone.sh` + `PHONE.md` — scrcpy/ADB helpers to mirror & control your phone from the PC |
-| **JARVIS Lab** | Image generation, camera + vision, Home Assistant control, AI video editor |
+| **A3THER Lab** | Image generation, camera + vision, Home Assistant control, AI video editor |
 
 ---
 
@@ -66,7 +66,7 @@ It runs **fully local first** (Ollama), but can use OpenAI, DeepSeek, Gemini, Gr
 - **Laptop → phone**: `phone.sh wifi` — plug in once, then full wireless mirror + control (scrcpy/ADB); also push/pull/screenshot
 - **AetherRemote.apk** — the phone app with discovery, pairing, commands, and a Screen viewer button
 
-### 🧪 JARVIS Lab
+### 🧪 A3THER Lab
 - **Image generation** — one prompt, one image (OpenAI images API)
 - **Camera + vision** — capture the webcam, then ask a vision model what it sees
 - **Home Assistant** — list every device grouped by room/domain, tap to toggle (needs your HA server + long-lived token)
@@ -217,7 +217,7 @@ cd remote_app && briefcase build android  # or use the prebuilt AetherRemote.apk
 | ScanGuard scanner | ✅ Live (exe + APK) |
 | Laptop → phone mirroring | ✅ Live (`phone.sh wifi` via scrcpy/ADB) |
 | Video editor | ✅ Live (OpenCV renders; honest errors when deps missing) |
-| JARVIS Lab (image gen, camera+vision, Home Assistant) | ✅ Live (honest setup prompts when keys/deps missing) |
+| A3THER Lab (image gen, camera+vision, Home Assistant) | ✅ Live (honest setup prompts when keys/deps missing) |
 | Silent subprocesses | ✅ Live — no console/PowerShell window flashes |
 
 See [`REMOTE.md`](REMOTE.md) for the honest remote-control roadmap.

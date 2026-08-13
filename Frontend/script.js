@@ -1154,7 +1154,7 @@
 
         <div class="settings-section">
           <h4>HOME ASSISTANT</h4>
-          <p class="settings-note">JARVIS integration — control your smart home from the HUD (devices by room, tap to toggle).</p>
+          <p class="settings-note">Home Assistant integration — control your smart home from the HUD (devices by room, tap to toggle).</p>
           <div class="settings-row">
             <label>Server URL<small>e.g. http://192.168.1.20:8123</small></label>
             <input class="settings-text-input" id="set-ha-url" type="text" placeholder="http://homeassistant.local:8123" autocomplete="off" spellcheck="false" />
@@ -1606,7 +1606,7 @@
         });
       }
 
-      // Home Assistant — JARVIS smart-home integration
+      // Home Assistant — A3THER smart-home integration
       const haUrlInput = body.querySelector("#set-ha-url");
       const haTokenInput = body.querySelector("#set-ha-token");
       const haStatus = body.querySelector("#set-ha-status");
@@ -1916,7 +1916,7 @@
         "  specs           real hardware specs (CPU / GPU / RAM)",
         "  mesh            device mesh status (Ultron Control)",
         "  broadcast <cmd> send a command to every connected device",
-        "  terminate       JARVIS failsafe — kill processes + mesh",
+        "  terminate       A3THER failsafe — kill processes + mesh",
         "  android         ADB control: status · unlock · tap x=500 y=900 …",
         "  devices         real Bluetooth + LAN devices",
         "  predict         AI forecast — what happens next",
@@ -1996,7 +1996,7 @@
       },
       async terminate(raw) {
         const reason = raw.join(" ") || "terminal abort";
-        Terminal.print("Issuing JARVIS FAILSAFE — terminate…", "");
+        Terminal.print("Issuing A3THER FAILSAFE — terminate…", "");
         const r = await API.post("/api/sync/terminate", { reason });
         if (!r) return ["TERMINATE: backend offline."];
         return [
@@ -2269,7 +2269,7 @@
   };
 
   /* =========================================================
-     JARVIS LAB — image generation, camera + vision, Home Assistant
+     A3THER LAB — image generation, camera + vision, Home Assistant
   ========================================================= */
   const JarvisLab = {
     _ha: null,
@@ -3190,7 +3190,7 @@
       if (m.type === "welcome") { this.nodeId = m.node_id; return; }
       if (m.type === "ping") { this.send({ type: "heartbeat" }); return; }
       if (m.type === "terminate" || m.command === "terminate") {
-        Toasts.err("JARVIS FAILSAFE — TERMINATE ORDER RECEIVED");
+        Toasts.err("A3THER FAILSAFE — TERMINATE ORDER RECEIVED");
         Terminal.print("[FAILSAFE] termination order — clearing outstanding tasks", "err");
         Terminal.clear();
         return;
