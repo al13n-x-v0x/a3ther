@@ -225,7 +225,11 @@ class VoicePipeline:
 
             # listening / transcribing
             text, is_final = self.transcriber.feed(block)
-            self._silence_ms += 30
+            # Derive silence from the actual block length (30 ms @ 16 kHz)
+            # so the timing stays correct if the block size ever changes.
+            self._silence_ms += int(
+                round(len(block) * 1000 / self.audio.sample_rate)
+            )
 
             if text and self._state == "listening":
                 self._set_state("transcribing", {"partial": text})

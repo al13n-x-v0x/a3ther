@@ -18,7 +18,7 @@ import queue
 import re
 import threading
 
-from core.tts import create_tts_player
+from core.tts import clean_for_speech, create_tts_player
 
 LOGGER = logging.getLogger("a3ther.voice")
 
@@ -54,6 +54,9 @@ class StreamingSpeaker:
         if not text or not text.strip():
             return
         self.start()
+        text = clean_for_speech(text)
+        if not text:
+            return
         for sentence in _split_sentences(text):
             if not sentence:
                 continue
