@@ -1,0 +1,69 @@
+[tool.briefcase]
+project_name = "AetherRemote"
+bundle = "com.aether"
+version = "0.1.0"
+url = "https://github.com/al13n-x-v0x/a3ther"
+license = "BSD-3-Clause"
+author = "al13n-x-v0x"
+author_email = "al13n-x-v0x@users.noreply.github.com"
+
+[tool.briefcase.app.aetherremote]
+formal_name = "AetherRemote"
+description = "Control your A3THER laptop from your phone over the LAN"
+long_description = """\
+AetherRemote is the phone half of the A3THER Phase-1 remote-control link.
+
+It discovers the A3THER desktop on the same Wi-Fi network (UDP beacon),
+pairs with it using the 6-digit code shown on the laptop, and can then:
+
+- see live system status (CPU, memory, uptime)
+- open apps on the laptop (Chrome, Notepad, Explorer, ...)
+- lock the workstation
+
+The laptop half is `remote_dev/agent_server.py` in the a3ther repo
+(started automatically by launcher.py). Pairing is authenticated with a
+short-lived code and a long-lived token; nothing is exposed to the internet.
+"""
+sources = [
+    "src/aetherremote",
+]
+
+requires = [
+]
+
+[tool.briefcase.app.aetherremote.macOS]
+requires = [
+    "toga-cocoa~=0.5.0",
+    "std-nslog~=2.0.0",
+]
+
+[tool.briefcase.app.aetherremote.linux]
+requires = [
+    "toga-gtk~=0.5.0",
+]
+
+[tool.briefcase.app.aetherremote.windows]
+requires = [
+    "toga-winforms~=0.5.0",
+]
+
+[tool.briefcase.app.aetherremote.iOS]
+requires = [
+    "toga-iOS~=0.5.0",
+]
+
+[tool.briefcase.app.aetherremote.android]
+requires = [
+    "toga-android~=0.5.0",
+]
+
+base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+
+build_gradle_dependencies = [
+    "com.google.android.material:material:1.13.0",
+]
+
+[tool.briefcase.app.aetherremote.web]
+requires = [
+    "toga-web~=0.5.0",
+]

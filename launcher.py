@@ -150,6 +150,23 @@ def _print_phone_link_later(port: int, delay: float = 5.0) -> None:
     threading.Thread(target=_run, daemon=True).start()
 
 
+def _start_remote_server(port: int | None = None, allow_shell: bool = False) -> None:
+    """Start the Phase-1 LAN remote-control server (pairing + actions).
+
+    This is the desktop half of the A3THER phone link: it broadcasts the
+    device on the LAN, serves pairing codes, and executes authenticated
+    actions (open/lock/status) from the paired phone app. Self-contained
+    (stdlib only) so it works even if the web stack can't start.
+    """
+    try:
+        from remote_dev.agent_server import start_server as start_remote
+
+        start_remote(port=port or int(os.environ.get("A3THER_REMOTE_PORT", "42872")), allow_shell=allow_shell, background=True)
+        print(f"[A3THER] Remote control ready on LAN port {port or 42872} — pair from the phone app.")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[A3THER] Remote control unavailable: {exc}")
+
+
 def main() -> int:
     # Force UTF-8 output so the ASCII banners never crash on cp1252 consoles
     # (matters when stdout is redirected to a file or a pipe).
@@ -165,6 +182,22 @@ def main() -> int:
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--no-browser", action="store_true", help="don't open the browser")
     parser.add_argument("--headless", action="store_true", help="server only, minimal output")
+    parser.add_argument(
+        "--remote-port",
+        type=int,
+        default=int(os.environ.get("A3THER_REMOTE_PORT", "42872")),
+        help="LAN port for the phone remote-control server",
+    )
+    parser.add_argument(
+        "--no-remote",
+        action="store_true",
+        help="disable the LAN remote-control server",
+    )
+    parser.add_argument(
+        "--allow-remote-shell",
+        action="store_true",
+        help="let the paired phone run shell commands on this PC",
+    )
     args = parser.parse_args()
 
     if not args.headless:
@@ -183,6 +216,10 @@ def main() -> int:
             _open_browser_later(f"http://127.0.0.1:{args.port}/")
 
     os.environ["A3THER_PORT"] = str(args.port)
+
+    # Phase-1 LAN remote control: discoverable, pairable, phone-driven.
+    if not args.no_remote:
+        _start_remote_server(args.remote_port, allow_shell=args.allow_remote_shell)
 
     # Import AFTER env is set so /api/sync/phone-link reports the right port.
     import backend.api.server as app_module  # noqa: PLC0415
