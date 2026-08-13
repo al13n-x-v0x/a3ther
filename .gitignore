@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Build outputs — Briefcase/Gradle keep these HUGE (hundreds of MB); ignore
+# the working dirs but keep the requested release artifacts tracked.
+scan_apk/build/
+scan_apk/logs/
+remote_app/build/
+remote_app/logs/
+*.aab
+
+# Env & secrets — never commit
+.env
+config/api_keys.json
+config/servers.json
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Freebuff local state
+.freebuff/
