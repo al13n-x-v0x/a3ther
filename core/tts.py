@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import os
 import queue as _queue
+import re
 import threading
 from typing import Callable, Optional
 
@@ -24,6 +25,110 @@ import sounddevice as sd
 # classes to vanish from the public namespace.  Auto-detection is reliable.
 os.environ.setdefault("USE_TF",                 "0")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
+
+# ---------------------------------------------------------------------------
+# Text cleanup for speech
+# ---------------------------------------------------------------------------
+# LLM output is full of markdown, URLs, emojis and repeated punctuation that
+# speech engines read out verbatim ("asterisk asterisk bold asterisk").
+# clean_for_speech() strips those artifacts and turns the rest into plain
+# natural language so TTS sounds like a person, not a markdown reader.
+
+_CODE_BLOCK_RE   = re.compile(r"```.*?```", re.DOTALL)
+_IMAGE_ALT_RE    = re.compile(r"!\[([^\]]*)\]\((?:[^)\s]+)(?:\s+\"[^\"]*\")?\)")
+_MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\((?:[^)\s]+)(?:\s+\"[^\"]*\")?\)")
+_URL_RE          = re.compile(r"(?:https?://|www\.)[^\s<>\"']+", re.IGNORECASE)
+_EMOJI_RANGE_RE  = re.compile(
+    "[\U0001F000-\U0001FAFF\U0001F900-\U0001F9FF\U0001F1E6-\U0001F1FF"
+    "\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u200D]"
+)
+
+# Common emojis -> spoken words (unknown ones are simply dropped).
+_EMOJI_WORDS = {
+    "😂": "laughing face",
+    "😅": "awkward smile",
+    "😀": "smiling face",
+    "😊": "smiling face",
+    "😍": "heart eyes",
+    "🥰": "loving face",
+    "😎": "cool face",
+    "🤔": "thinking face",
+    "🙄": "eye roll",
+    "👍": "thumbs up",
+    "👎": "thumbs down",
+    "🙏": "thank you",
+    "👏": "applause",
+    "🎉": "celebration",
+    "🎊": "celebration",
+    "❤️": "heart",
+    "❤": "heart",
+    "💖": "heart",
+    "💯": "one hundred",
+    "✅": "checkmark",
+    "✔": "checkmark",
+    "❌": "cross mark",
+    "⚠️": "warning",
+    "⚠": "warning",
+    "🚨": "alert",
+    "📢": "announcement",
+    "🔥": "fire",
+    "💡": "idea",
+    "📌": "pin",
+    "🔴": "red circle",
+    "⚡": "lightning",
+    "⭐": "star",
+    "🌟": "star",
+    "✨": "sparkles",
+    "🚀": "rocket",
+    "🎯": "bullseye",
+    "🧠": "brain",
+    "🤖": "robot",
+    "😴": "sleeping face",
+    "😭": "crying face",
+    "😡": "angry face",
+    "😱": "screaming face",
+    "🤯": "mind blown",
+    "🥳": "party face",
+}
+
+
+def clean_for_speech(text: str) -> str:
+    """Prepare text so TTS speaks it naturally instead of literally.
+
+    Strips code blocks, markdown markers, URLs, emojis and repeated
+    punctuation; converts ``[text](url)`` links to their display text.
+    Idempotent — safe to run on already-cleaned text (the streaming
+    speaker cleans the whole response, then each sentence again).
+    """
+    if not text:
+        return ""
+    out = str(text)
+    # Code blocks -> a plain pause (reading code aloud is noise).
+    out = _CODE_BLOCK_RE.sub(" ", out)
+    # Markdown images / links -> their alt / display text.
+    out = _IMAGE_ALT_RE.sub(r"\1", out)
+    out = _MARKDOWN_LINK_RE.sub(r"\1", out)
+    # Bare URLs -> the word "link".
+    out = _URL_RE.sub("link", out)
+    # Emojis -> a spoken word where we know one, otherwise dropped.
+    for emoji in sorted(_EMOJI_WORDS, key=len, reverse=True):
+        if emoji in out:
+            out = out.replace(emoji, f" {_EMOJI_WORDS[emoji]} ")
+    out = _EMOJI_RANGE_RE.sub("", out)
+    # Markdown markers: ## headers, **bold**, *italic*, __, ~~, `code`.
+    out = re.sub(r"^#{1,6}\s*", "", out, flags=re.M)
+    out = out.replace("**", " ").replace("__", " ").replace("~~", " ")
+    out = re.sub(r"(?<!\w)\*(?!\w)", " ", out)      # * bullets / emphasis
+    out = out.replace("`", "")
+    out = re.sub(r"^\s*[-+]\s+", "", out, flags=re.M)      # "- " / "+ " bullets
+    out = re.sub(r"^\s*\d+[.)]\s+", "", out, flags=re.M)  # "1." list numbers
+    # Collapse repeated punctuation: "!!!" -> "!", "..." -> "."
+    out = re.sub(r"([.!?]){3,}", r"\1", out)
+    # No stray spaces before punctuation: "rocket ." -> "rocket."
+    out = re.sub(r"\s+([.,!?;:])", r"\1", out)
+    out = re.sub(r"\s{2,}", " ", out).strip()
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -456,6 +561,11 @@ class TTSPlayer:
         on_done:  Optional[Callable] = None,
     ) -> None:
         """Synthesise and play text. BLOCKING – call from a dedicated thread."""
+        text = clean_for_speech(text)
+        if not text:
+            if on_done:
+                on_done()
+            return
         try:
             with self._lock:
                 self._playing = True
