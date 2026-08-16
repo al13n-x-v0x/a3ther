@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import re
+import sys
 import threading
 import time
 import uuid
@@ -52,10 +53,33 @@ def _data_dir() -> Path:
 
 
 def _client_secrets_path() -> Path:
-    # Allow an override via env, else the standard project location.
+    """Locate the Google OAuth client_secrets.json.
+
+    Search order (frozen-exe safe — never relies on the CWD alone):
+      1. ``A3THER_YT_CLIENT_SECRETS`` env override.
+      2. App-data copy (``%LOCALAPPDATA%\\A3THER\\config\\...``) —
+         ``data_path()`` lazily migrates a repo copy in dev mode.
+      3. A copy sitting next to the frozen exe (``dist/A3THER/config/``) —
+         copied into the app-data dir once so later runs are stable.
+      4. Repo/working copy (dev mode, or the exe launched from the repo root).
+    """
     override = os.environ.get("A3THER_YT_CLIENT_SECRETS")
     if override:
         return Path(override)
+    try:
+        from config.paths import data_path
+
+        target = data_path("config/client_secrets.json")
+        if target.exists():
+            return target
+        if getattr(sys, "frozen", False):
+            exe_side = Path(sys.executable).resolve().parent / "config" / "client_secrets.json"
+            if exe_side.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(exe_side.read_bytes())
+                return target
+    except Exception:  # noqa: BLE001
+        pass
     return Path("config/client_secrets.json").resolve()
 
 

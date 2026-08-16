@@ -50,6 +50,7 @@ def ensure_data_dir() -> Path:
 #: Repo-relative files that get migrated into the data dir on first access.
 _MIGRATABLE = (
     "config/api_keys.json",
+    "config/client_secrets.json",
     "config/servers.json",
     "config/mcp-servers.json",
     "config/weather_override.json",
