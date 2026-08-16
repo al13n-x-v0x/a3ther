@@ -1,0 +1,167 @@
+# This project was generated with 0.4.4 using template: https://github.com/beeware/briefcase-template @ v0.4.4
+[tool.briefcase]
+project_name = "ScanGuard"
+bundle = "com.scanguard"
+version = "1.0.0"
+url = "https://example.com/scanguard"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+author = "a3ther"
+author_email = "admin@example.com"
+
+[tool.briefcase.app.scanguard]
+formal_name = "ScanGuard"
+description = "Scan folders for double-extension files and magic-byte mismatches"
+long_description = """\
+ScanGuard scans a folder for files that look harmless but aren't:
+
+1. Double-extension masquerades — photo.png.exe, invoice.pdf.scr. With "hide
+   known file extensions" enabled, Windows displays photo.png.exe as
+   photo.png, a classic malware trick.
+
+2. Magic-byte mismatches — a photo.png that actually starts with MZ is a
+   renamed Windows executable; an invoice.pdf containing a ZIP header is
+   something other than what it claims to be.
+
+Reads only the first 16 bytes of each file, so it's fast even on large trees.
+"""
+sources = [
+    "src/scanguard",
+]
+test_sources = [
+]
+
+requires = [
+]
+test_requires = [
+]
+
+[tool.briefcase.app.scanguard.macOS]
+universal_build = true
+requires = [
+    "toga-cocoa~=0.5.0",
+    "std-nslog~=2.0.0",
+]
+
+[tool.briefcase.app.scanguard.linux]
+requires = [
+    "toga-gtk~=0.5.0",
+]
+
+[tool.briefcase.app.scanguard.linux.system.debian]
+system_requires = [
+    # Needed to compile pycairo wheel
+    "libcairo2-dev",
+    "libgirepository-2.0-dev",
+]
+
+system_runtime_requires = [
+    # Needed to provide GTK and its GI bindings
+    "gir1.2-gtk-3.0",
+    "libgirepository-2.0-0",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra-gtk3-module",
+]
+
+[tool.briefcase.app.scanguard.linux.system.rhel]
+system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo-gobject-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
+]
+
+system_runtime_requires = [
+    # Needed to support Python bindings to GTK
+    "gobject-introspection",
+    # Needed to provide GTK
+    "gtk3",
+]
+
+[tool.briefcase.app.scanguard.linux.system.suse]
+system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
+]
+
+system_runtime_requires = [
+    # Needed to provide GTK
+    "gtk3",
+    # Needed to support Python bindings to GTK
+    "gobject-introspection", "typelib(Gtk) = 3.0",
+]
+
+[tool.briefcase.app.scanguard.linux.system.arch]
+system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection",
+    # Runtime dependencies that need to exist so that the
+    # Arch package passes final validation.
+    # Needed to provide GTK
+    "gtk3",
+]
+
+system_runtime_requires = [
+    # Needed to provide GTK
+    "gtk3",
+    # Needed to provide PyGObject bindings
+    "gobject-introspection-runtime",
+]
+
+[tool.briefcase.app.scanguard.linux.appimage]
+manylinux = "manylinux_2_28"
+
+system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo-gobject-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
+    # Needed to provide GTK
+    "gtk3-devel",
+]
+
+linuxdeploy_plugins = [
+    "DEPLOY_GTK_VERSION=3 gtk",
+]
+
+[tool.briefcase.app.scanguard.linux.flatpak]
+flatpak_runtime = "org.gnome.Platform"
+flatpak_runtime_version = "48"
+flatpak_sdk = "org.gnome.Sdk"
+
+[tool.briefcase.app.scanguard.windows]
+requires = [
+    "toga-winforms~=0.5.0",
+]
+
+# Mobile deployments
+[tool.briefcase.app.scanguard.iOS]
+requires = [
+    "toga-iOS~=0.5.0",
+]
+
+[tool.briefcase.app.scanguard.android]
+requires = [
+    "toga-android~=0.5.0",
+]
+
+base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+
+build_gradle_dependencies = [
+    "com.google.android.material:material:1.13.0",
+]
+
+# Storage access: READ/WRITE_EXTERNAL_STORAGE covers Android 6-10; on
+# Android 11+ the user must grant "All files access" (MANAGE_EXTERNAL_STORAGE)
+# in Settings -> Apps -> ScanGuard -> Permissions -> Files and media.
+permission = { "android.permission.READ_EXTERNAL_STORAGE" = {}, "android.permission.WRITE_EXTERNAL_STORAGE" = {}, "android.permission.MANAGE_EXTERNAL_STORAGE" = {} }
+
+# Web deployments
+[tool.briefcase.app.scanguard.web]
+requires = [
+    "toga-web~=0.5.0",
+]
