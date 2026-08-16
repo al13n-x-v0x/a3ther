@@ -291,7 +291,9 @@ def _ai_metadata(video_name: str) -> dict:
             "no clickbait lies>\", \"description\": \"<2-4 lines with hashtags>\", "
             "\"tags\": [\"<5-8 tags>\"]}"
         )
-        raw = gateway.complete_text(prompt, max_tokens=400, timeout=40)
+        # Thinking models eat part of the budget before writing — give them
+        # room so the JSON isn't truncated mid-object.
+        raw = gateway.complete_text(prompt, max_tokens=1200, timeout=90)
         m = re.search(r"\{.*\}", raw or "", re.DOTALL)
         if not m:
             raise RuntimeError("LLM did not return JSON")
