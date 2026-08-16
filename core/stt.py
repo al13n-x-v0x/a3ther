@@ -91,3 +91,21 @@ class VoskSTT:
             return result.get("text", ""), True
         partial = json.loads(self._rec.PartialResult())
         return partial.get("partial", ""), False
+
+
+def create_stt_engine(config: dict) -> object:
+    """Create a speech-to-text engine from configuration.
+
+    Supported engines:
+    - whisper: offline faster-whisper transcription
+    - vosk: offline Vosk streaming transcription
+    """
+    engine_name = str(config.get("stt_engine", "whisper")).lower()
+    if engine_name == "vosk":
+        model_path = config.get("vosk_model_path")
+        language = str(config.get("vosk_language", "en-us"))
+        return VoskSTT(model_path=model_path, language=language)
+
+    model_name = str(config.get("whisper_model", "base"))
+    language = config.get("whisper_language", None)
+    return WhisperSTT(model_name=model_name, language=language)

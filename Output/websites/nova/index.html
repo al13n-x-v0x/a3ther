@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nova</title>
+    <style>
+        :root {
+            --bg: #05060f;
+            --fg: #eaffff;
+            --accent: #7df9ff;
+            --accent2: #b44bff;
+            --panel: rgba(10,18,32,.72);
+            --edge: rgba(125,249,255,.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        #bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 900;
+            color: transparent;
+            -webkit-text-stroke: 2px var(--accent);
+            text-shadow: 0 0 30px rgba(125, 249, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--accent2);
+            font-weight: 300;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--edge);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 3rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+            border-radius: 2px;
+        }
+
+        .panel h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            border-left: 4px solid var(--accent2);
+            padding-left: 1rem;
+            text-transform: uppercase;
+        }
+
+        .tour-list {
+            list-style: none;
+        }
+
+        .tour-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--edge);
+        }
+
+        .tour-item:last-child { border-bottom: none; }
+
+        .date { color: var(--accent2); font-weight: bold; width: 120px; }
+        .venue { flex: 1; }
+        .location { opacity: 0.7; font-style: italic; }
+
+        .btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .tour-item { flex-direction: column; gap: 0.5rem; }
+            .panel { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg"></div>
+
+    <main>
+        <section class="hero">
+            <h1>NOVA</h1>
+            <p>Digital Resonance & Neon Echoes</p>
+            <a href="#about" class="btn">Enter the Void</a>
+        </section>
+
+        <section id="about">
+            <div class="panel">
+                <h2>The Architect</h2>
+                <p>Nova is a multi-dimensional producer and DJ based in the neon-soaked streets of Neo-Tokyo. Merging hyper-detailed sound design with the raw energy of underground techno, Nova creates auditory landscapes that bridge the gap between the virtual and the physical.</p>
+                <p style="margin-top: 1rem;">With a signature style defined by crystalline highs and tectonic sub-bass, every performance is a journey through a synthesized future.</p>
+            </div>
+        </section>
+
+        <section id="tour">
+            <div class="panel">
+                <h2>Global Transmission</h2>
+                <div class="tour-list">
+                    <div class="tour-item">
+                        <span class="date">OCT 24</span>
+                        <span class="venue">Cyberdyne Hall</span>
+                        <span class="location">Berlin, DE</span>
+                    </div>
+                    <div class="tour-item">
+                        <span class="date">NOV 02</span>
+                        <span class="venue">The Grid</span>
+                        <span class="location">London, UK</span>
+                    </div>
+                    <div class="tour-item">
+                        <span class="date">NOV 15</span>
+                        <span class="venue">Prism Arena</span>
+                        <span class="location">New York, US</span>
+                    </div>
+                    <div class="tour-item">
+                        <span class="date">DEC 01</span>
+                        <span class="venue">Zenith Station</span>
+                        <span class="location">Tokyo, JP</span>
+                    </div>
+                </div>
+                <a href="#" class="btn">View All Dates</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // NEON GRID
+        const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+        renderer.setSize(innerWidth,innerHeight);document.getElementById('bg').appendChild(renderer.domElement);
+        const grid=new THREE.GridHelper(40,40,0x7df9ff,0x7df9ff);grid.material.opacity=.35;grid.material.transparent=true;scene.add(grid);
+        const geo=new THREE.IcosahedronGeometry(2,1),mat=new THREE.MeshStandardMaterial({color:0x7df9ff,wireframe:true,transparent:true,opacity:.5}),core=new THREE.Mesh(geo,mat);scene.add(core);
+        scene.add(new THREE.PointLight(0x7df9ff,2,30));camera.position.set(0,6,10);camera.lookAt(0,0,0);
+        function tick(){requestAnimationFrame(tick);core.rotation.x+=.003;core.rotation.y+=.005;grid.position.y=-2;renderer.render(scene,camera)}tick();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

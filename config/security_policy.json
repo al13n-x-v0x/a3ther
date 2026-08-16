@@ -1,0 +1,74 @@
+{
+  "approval_timeout_seconds": 120,
+  "auto_approve_safe": true,
+  "blocked_patterns": {
+    "all": [
+      "\\brm\\s+-rf\\s+/",
+      "\\brm\\s+-rf\\s+[a-z]:[/\\\\]",
+      "\\bmkfs\\b",
+      "\\bdd\\s+if=/dev/zero",
+      "\\bdiskpart\\b",
+      "\\bformat\\s+[a-z]:",
+      "\\bnet\\s+user\\b",
+      "\\bnetsh\\s+advfirewall",
+      "reg\\s+(add|delete)\\s+HKLM",
+      "shutdown\\s+/\\s*s",
+      "shutdown\\s+-h",
+      "del\\s+/s\\s+/q\\s+[a-z]:[/\\\\]",
+      "rd\\s+/s\\s+/q\\s+[a-z]:[/\\\\]",
+      "remove-item\\s+-recurse\\s+-force\\s+[a-z]:[/\\\\]",
+      "powershell\\s+-enc",
+      "curl\\s+[^\\s|]+\\s*\\|\\s*(ba)?sh",
+      "wget\\s+[^\\s|]+\\s*\\|\\s*(ba)?sh",
+      ":\\(\\)\\{\\s*:\\|\\s*:\\s*&\\s*\\}\\s*;",
+      "taskkill\\s+/f\\s+/im\\s+system",
+      "chmod\\s+-r\\s+777\\s+/",
+      "sudo\\s+rm\\s+-rf\\s+/"
+    ],
+    "windows": [
+      "del\\s+/s\\s+/q",
+      "rd\\s+/s\\s+/q",
+      "rmdir\\s+/s\\s+/q",
+      "format\\s+[a-z]:"
+    ],
+    "linux": [
+      "chown\\s+-r\\s+[^:]+:\\s*/",
+      "\\bmkfs\\.",
+      "echo\\s+[^\\n]*\\s*\\>\\s*/dev/sd"
+    ],
+    "mac": [
+      "diskutil\\s+erase",
+      "sudo\\s+rm\\s+-rf\\s+/"
+    ]
+  },
+  "dangerous_patterns": {
+    "all": [
+      "\\brm\\s+-rf\\b",
+      "\\brm\\s+-r\\b",
+      "\\bdel\\s+/[sq]",
+      "\\bgit\\s+push\\s+.*--force",
+      "\\bgit\\s+reset\\s+--hard",
+      "\\bpip\\s+uninstall\\b",
+      "\\bnpm\\s+uninstall\\s+-g\\b",
+      "\\bdrop\\s+table\\b",
+      "\\bdelete\\s+from\\b",
+      "\\bshutdown\\b",
+      "\\breboot\\b",
+      "\\brestart\\b",
+      "\\btaskkill\\b",
+      "\\bkill\\s+-9\\b",
+      "\\bpkill\\b",
+      "\\bsystemctl\\s+stop\\b",
+      "\\bservice\\s+stop\\b",
+      "\\breg\\s+(add|delete)\\b",
+      "\\bchmod\\b",
+      "\\bchown\\b",
+      "\\bdd\\s+of=",
+      "\\bmkfs",
+      "\\bformat\\s",
+      "python\\s+-m\\s+pip\\s+uninstall",
+      "git\\s+clean\\s+-f",
+      "docker\\s+(rm\\s+-f|system\\s+prune|volume\\s+rm)"
+    ]
+  }
+}

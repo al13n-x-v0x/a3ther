@@ -1,0 +1,2109 @@
+{
+  "files": {
+    "actions\\background_monitor.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "hashlib",
+          "name": "hashlib"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_is_blocked",
+        "_load",
+        "_save",
+        "_slug",
+        "_title_hash",
+        "add_monitor",
+        "check_all",
+        "list_monitors",
+        "remove_monitor"
+      ]
+    },
+    "actions\\browser_control.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "__future__",
+          "name": "annotations",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "asyncio",
+          "name": "asyncio"
+        },
+        {
+          "type": "import",
+          "module": "concurrent.futures",
+          "name": "concurrent.futures"
+        },
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "import",
+          "module": "webbrowser",
+          "name": "webbrowser"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Optional",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "playwright.async_api",
+          "name": "async_playwright",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "playwright.async_api",
+          "name": "BrowserContext",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "playwright.async_api",
+          "name": "Page",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "playwright.async_api",
+          "name": "Playwright",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "playwright.async_api",
+          "name": "TimeoutError",
+          "as": "PlaywrightTimeout"
+        }
+      ],
+      "defs": [
+        "_BrowserSession",
+        "_SessionRegistry",
+        "_detect_default_browser",
+        "_find_exe_windows",
+        "_find_opera_windows",
+        "_firefox_profile_dir",
+        "_log",
+        "_normalize_url",
+        "_open_native",
+        "_real_profile_dir",
+        "_resolve_browser",
+        "_user_agent",
+        "browser_control"
+      ]
+    },
+    "actions\\code_helper.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_build",
+        "_clean_code",
+        "_detect_intent",
+        "_edit_action",
+        "_explain_action",
+        "_fix_code",
+        "_get_api_key",
+        "_get_gemini",
+        "_has_error",
+        "_image_to_base64",
+        "_optimize_action",
+        "_preview",
+        "_read_file",
+        "_resolve_save_path",
+        "_run_action",
+        "_run_file",
+        "_save_file",
+        "_screen_debug_action",
+        "_take_screenshot",
+        "_write",
+        "_write_action",
+        "code_helper",
+        "get_base_dir"
+      ]
+    },
+    "actions\\computer_control.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "io",
+          "name": "io"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "string",
+          "name": "string"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "random",
+          "name": "random"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_base_dir",
+        "_clear_field",
+        "_click",
+        "_clipboard_get",
+        "_clipboard_paste",
+        "_drag",
+        "_focus_window",
+        "_get_api_key",
+        "_get_os",
+        "_hotkey",
+        "_load_config",
+        "_move",
+        "_platform_os",
+        "_press",
+        "_random_data",
+        "_require_pyautogui",
+        "_safe_screenshot_path",
+        "_screen_find",
+        "_screenshot",
+        "_scroll",
+        "_smart_type",
+        "_type",
+        "_user_profile",
+        "computer_control"
+      ]
+    },
+    "actions\\computer_settings.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_detect_action",
+        "_get_api_key",
+        "_get_base_dir",
+        "_get_macos_wifi_interface",
+        "brightness_down",
+        "brightness_up",
+        "close_app",
+        "close_tab",
+        "close_window",
+        "computer_settings",
+        "copy",
+        "cut",
+        "dark_mode",
+        "find_on_page",
+        "focus_search",
+        "full_screen",
+        "go_back",
+        "go_forward",
+        "lock_screen",
+        "maximize_window",
+        "minimize_window",
+        "new_tab",
+        "next_tab",
+        "open_file_explorer",
+        "open_run",
+        "open_system_settings",
+        "open_task_manager",
+        "page_down",
+        "page_up",
+        "paste",
+        "pause_video",
+        "press_enter",
+        "press_escape",
+        "press_key",
+        "prev_tab",
+        "redo",
+        "refresh_page",
+        "reload_page_n",
+        "restart_computer",
+        "save_file",
+        "scroll_bottom",
+        "scroll_down",
+        "scroll_top",
+        "scroll_up",
+        "select_all",
+        "show_desktop",
+        "shutdown_computer",
+        "sleep_display",
+        "snap_left",
+        "snap_right",
+        "switch_window",
+        "take_screenshot",
+        "toggle_wifi",
+        "type_text",
+        "undo",
+        "volume_down",
+        "volume_mute",
+        "volume_set",
+        "volume_up",
+        "zoom_in",
+        "zoom_out",
+        "zoom_reset"
+      ]
+    },
+    "actions\\desktop.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "tempfile",
+          "name": "tempfile"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_ask_gemini_for_desktop_action",
+        "_build_sandbox",
+        "_execute_generated_code",
+        "_get_api_key",
+        "_get_base_dir",
+        "_get_desktop",
+        "clean_desktop",
+        "desktop_control",
+        "get_current_wallpaper",
+        "get_desktop_stats",
+        "list_desktop",
+        "organize_desktop",
+        "set_wallpaper",
+        "set_wallpaper_from_url"
+      ]
+    },
+    "actions\\dev_agent.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "RateLimitError",
+        "_build_project",
+        "_classify_error",
+        "_fix_files",
+        "_get_api_key",
+        "_get_model",
+        "_has_error",
+        "_install_dependencies",
+        "_is_rate_limit",
+        "_open_vscode",
+        "_parse_traceback",
+        "_plan_project",
+        "_run_project",
+        "_strip_fences",
+        "_try_auto_install",
+        "_write_file",
+        "dev_agent",
+        "get_base_dir"
+      ]
+    },
+    "actions\\file_controller.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_format_size",
+        "_get_desktop",
+        "_get_documents",
+        "_get_downloads",
+        "_get_music",
+        "_get_pictures",
+        "_get_videos",
+        "_is_safe_path",
+        "_resolve_path",
+        "_safe_trash",
+        "copy_file",
+        "create_file",
+        "create_folder",
+        "delete_file",
+        "file_controller",
+        "find_files",
+        "get_disk_usage",
+        "get_file_info",
+        "get_largest_files",
+        "list_files",
+        "move_file",
+        "organize_desktop",
+        "read_file",
+        "rename_file",
+        "write_file"
+      ]
+    },
+    "actions\\file_processor.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "tempfile",
+          "name": "tempfile"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_detect_type",
+        "_file_size_str",
+        "_gemini_client",
+        "_get_api_key",
+        "_output_path",
+        "_process_archive",
+        "_process_audio",
+        "_process_code",
+        "_process_data",
+        "_process_image",
+        "_process_json",
+        "_process_pdf",
+        "_process_pptx",
+        "_process_text_doc",
+        "_process_video",
+        "file_processor"
+      ]
+    },
+    "actions\\flight_finder.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "timedelta",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_windows",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_mac",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_linux",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_build_google_flights_url",
+        "_format_spoken",
+        "_format_text_report",
+        "_get_api_key",
+        "_get_base_dir",
+        "_parse_date",
+        "_parse_flights_with_gemini",
+        "_save_to_desktop",
+        "_search_flights_browser",
+        "flight_finder"
+      ]
+    },
+    "actions\\game_updater.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "get_os",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_windows",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_mac",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_linux",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_cancel_scheduled_update",
+        "_click_button",
+        "_click_first_profile_by_screenshot",
+        "_ensure_steam_running",
+        "_epic_manifests_path",
+        "_find_best_drive",
+        "_find_epic_exe",
+        "_find_epic_exe_linux",
+        "_find_epic_exe_mac",
+        "_find_epic_exe_windows",
+        "_find_steam_linux",
+        "_find_steam_mac",
+        "_find_steam_path",
+        "_find_steam_windows",
+        "_get_download_status",
+        "_get_epic_games",
+        "_get_schedule_status",
+        "_get_steam_games",
+        "_get_steam_libraries",
+        "_get_steam_window_rect",
+        "_handle_install_dialog",
+        "_handle_install_dialog_pyautogui",
+        "_handle_steam_profile_selection",
+        "_install_steam_game",
+        "_is_epic_running",
+        "_is_steam_running",
+        "_launch_steam_url",
+        "_schedule_daily_update",
+        "_schedule_linux",
+        "_schedule_mac",
+        "_schedule_windows",
+        "_search_steam_appid",
+        "_select_drive_in_dialog",
+        "_steam_exe",
+        "_system_shutdown",
+        "_update_epic_games",
+        "_update_steam_games",
+        "_watch_and_shutdown",
+        "game_updater"
+      ]
+    },
+    "actions\\open_app.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        }
+      ],
+      "defs": [
+        "_launch_linux",
+        "_launch_macos",
+        "_launch_windows",
+        "_normalize",
+        "open_app"
+      ]
+    },
+    "actions\\proactive.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        }
+      ],
+      "defs": [
+        "ProactiveEngine"
+      ]
+    },
+    "actions\\reminder.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_base_dir",
+        "_get_os",
+        "_sanitise",
+        "_schedule_linux",
+        "_schedule_mac",
+        "_schedule_windows",
+        "_scripts_dir",
+        "_write_notify_script",
+        "reminder"
+      ]
+    },
+    "actions\\screen_processor.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "__future__",
+          "name": "annotations",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "asyncio",
+          "name": "asyncio"
+        },
+        {
+          "type": "import",
+          "module": "base64",
+          "name": "base64"
+        },
+        {
+          "type": "import",
+          "module": "io",
+          "name": "io"
+        },
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Optional",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "numpy",
+          "name": "np"
+        },
+        {
+          "type": "import",
+          "module": "sounddevice",
+          "name": "sd"
+        },
+        {
+          "type": "from",
+          "module": "google",
+          "name": "genai",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "google.genai",
+          "name": "types",
+          "as": "gtypes"
+        }
+      ],
+      "defs": [
+        "_VisionSession",
+        "_base_dir",
+        "_capture_camera",
+        "_capture_screen",
+        "_compress",
+        "_cv2_backend",
+        "_detect_camera_index",
+        "_ensure_session",
+        "_get_api_key",
+        "_get_camera_index",
+        "_get_os",
+        "_load_config",
+        "_probe_camera",
+        "_save_config_key",
+        "screen_process",
+        "warmup_session"
+      ]
+    },
+    "actions\\send_message.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_base_dir",
+        "_clear_and_paste",
+        "_desktop_send",
+        "_get_os",
+        "_open_app",
+        "_open_browser_url",
+        "_paste_text",
+        "_require_pyautogui",
+        "_resolve_platform",
+        "_search_in_app",
+        "_send_discord",
+        "_send_instagram",
+        "_send_messenger",
+        "_send_signal",
+        "_send_telegram",
+        "_send_whatsapp",
+        "send_message"
+      ]
+    },
+    "actions\\system_monitor.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "ctypes",
+          "name": "ctypes"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "psutil",
+          "name": "psutil"
+        }
+      ],
+      "defs": [
+        "SystemMonitor",
+        "_get_cpu_temp",
+        "_get_gpu_usage",
+        "_nvml_gpu",
+        "get_system_status"
+      ]
+    },
+    "actions\\weather_report.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "webbrowser",
+          "name": "webbrowser"
+        },
+        {
+          "type": "from",
+          "module": "urllib.parse",
+          "name": "quote_plus",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_log",
+        "weather_action"
+      ]
+    },
+    "actions\\web_search.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_compare",
+        "_ddg_news",
+        "_ddg_search",
+        "_format_ddg",
+        "_format_news",
+        "_gemini_headlines",
+        "_gemini_search",
+        "_get_api_key",
+        "_get_base_dir",
+        "_news",
+        "_price",
+        "_research",
+        "_search",
+        "web_search"
+      ]
+    },
+    "actions\\youtube_video.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "shutil",
+          "name": "shutil"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "urllib.parse",
+          "name": "quote_plus",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "get_os",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_windows",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_mac",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "is_linux",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_ask_for_url",
+        "_extract_video_id",
+        "_get_api_key",
+        "_get_base_dir",
+        "_get_transcript",
+        "_handle_get_info",
+        "_handle_play",
+        "_handle_summarize",
+        "_handle_trending",
+        "_is_valid_youtube_url",
+        "_open_url",
+        "_save_summary",
+        "_scrape_first_video_url",
+        "_scrape_trending",
+        "_scrape_video_info",
+        "_summarize_with_gemini",
+        "youtube_video"
+      ]
+    },
+    "actions\\__init__.py": {
+      "imports": [],
+      "defs": []
+    },
+    "backend\\main.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "import",
+          "module": "importlib",
+          "name": "importlib"
+        }
+      ],
+      "defs": [
+        "BootAETHER",
+        "InitializeAI",
+        "InitializeDatabase",
+        "LoadModule",
+        "Shutdown",
+        "StartAPI"
+      ]
+    },
+    "backend\\__init__.py": {
+      "imports": [],
+      "defs": []
+    },
+    "config\\__init__.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_platform_os",
+        "get_config",
+        "get_os",
+        "is_linux",
+        "is_mac",
+        "is_windows"
+      ]
+    },
+    "core\\installer.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "__future__",
+          "name": "annotations",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "importlib.util",
+          "name": "importlib.util"
+        },
+        {
+          "type": "import",
+          "module": "platform",
+          "name": "platform"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Callable",
+          "as": null
+        }
+      ],
+      "defs": [
+        "_available",
+        "_pip",
+        "install_for_config"
+      ]
+    },
+    "core\\llm_client.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        },
+        {
+          "type": "import",
+          "module": "subprocess",
+          "name": "subprocess"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Callable",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Generator",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "requests",
+          "name": "requests"
+        }
+      ],
+      "defs": [
+        "_load_config",
+        "_stream_openai",
+        "call_llm",
+        "call_llm_stream",
+        "call_llm_text",
+        "check_model_available",
+        "ensure_ollama_running",
+        "get_base_dir",
+        "get_llm_provider",
+        "get_llm_settings",
+        "warmup_model"
+      ]
+    },
+    "core\\logging_config.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "logging",
+          "name": "logging"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        }
+      ],
+      "defs": [
+        "configure_logging",
+        "get_logger"
+      ]
+    },
+    "core\\modes.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "__future__",
+          "name": "annotations",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "dataclasses",
+          "name": "dataclass",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Any",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Dict",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "List",
+          "as": null
+        }
+      ],
+      "defs": [
+        "ModeError",
+        "ModeManager",
+        "ModeSettings"
+      ]
+    },
+    "core\\ollama_integration.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Optional",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "logging",
+          "name": "logging"
+        },
+        {
+          "type": "import",
+          "module": "core.llm_client",
+          "name": "llm_client"
+        }
+      ],
+      "defs": [
+        "call_text",
+        "check_model",
+        "ensure_running",
+        "pull_model"
+      ]
+    },
+    "core\\stt.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "numpy",
+          "name": "np"
+        }
+      ],
+      "defs": [
+        "VoskSTT",
+        "WhisperSTT",
+        "create_stt_engine"
+      ]
+    },
+    "core\\timekeeper.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "timezone",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "logging",
+          "name": "logging"
+        }
+      ],
+      "defs": [
+        "TimeKeeper",
+        "get_timekeeper"
+      ]
+    },
+    "core\\tts.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "__future__",
+          "name": "annotations",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "asyncio",
+          "name": "asyncio"
+        },
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "import",
+          "module": "queue",
+          "name": "_queue"
+        },
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Callable",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "typing",
+          "name": "Optional",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "numpy",
+          "name": "np"
+        },
+        {
+          "type": "import",
+          "module": "sounddevice",
+          "name": "sd"
+        }
+      ],
+      "defs": [
+        "EdgeTTSEngine",
+        "ElevenLabsTTSEngine",
+        "KokoroTTSEngine",
+        "TTSPlayer",
+        "_compress_silence",
+        "_import_kokoro_pipeline",
+        "_play_audio_bytes",
+        "_play_np",
+        "_to_numpy",
+        "create_tts_player"
+      ]
+    },
+    "core\\__init__.py": {
+      "imports": [],
+      "defs": []
+    },
+    "memory\\config_manager.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        }
+      ],
+      "defs": [
+        "config_exists",
+        "ensure_config_dir",
+        "get_assistant_name",
+        "get_base_dir",
+        "get_brief_enabled",
+        "get_gemini_key",
+        "get_user_name",
+        "is_configured",
+        "load_api_keys",
+        "save_api_keys",
+        "save_assistant_config",
+        "save_brief_enabled"
+      ]
+    },
+    "memory\\memory_manager.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "json",
+          "name": "json"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "threading",
+          "name": "Lock",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "pathlib",
+          "name": "Path",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "sys",
+          "name": "sys"
+        }
+      ],
+      "defs": [
+        "_all_entries",
+        "_empty_memory",
+        "_recursive_update",
+        "_trim_to_limit",
+        "_truncate_value",
+        "forget",
+        "format_memory_for_prompt",
+        "get_base_dir",
+        "load_memory",
+        "pop_last_session",
+        "remember",
+        "save_memory",
+        "save_session_summary",
+        "update_memory"
+      ]
+    },
+    "memory\\__init__.py": {
+      "imports": [],
+      "defs": []
+    },
+    "backend\\ai\\brain.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "threading",
+          "name": "threading"
+        },
+        {
+          "type": "from",
+          "module": "concurrent.futures",
+          "name": "ThreadPoolExecutor",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "time",
+          "name": "time"
+        },
+        {
+          "type": "from",
+          "module": "backend.ai.reasoning",
+          "name": "Analyze",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "core.llm_client",
+          "name": "llm_client"
+        },
+        {
+          "type": "import",
+          "module": "memory.memory_manager",
+          "name": "memory_manager"
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "load_memory",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "update_memory",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "format_memory_for_prompt",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "remember",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "forget",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "save_session_summary",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "pop_last_session",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "memory.memory_manager",
+          "name": "save_memory",
+          "as": "memory_save"
+        },
+        {
+          "type": "from",
+          "module": "core.tts",
+          "name": "create_tts_player",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "core.stt",
+          "name": "create_stt_engine",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "core.modes",
+          "name": "ModeManager",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "core.modes",
+          "name": "ModeError",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "core.stt",
+          "name": "stt_module"
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "open_app",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "web_search",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "browser_control",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "weather_report",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "system_monitor",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "file_controller",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "computer_control",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "send_message",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "actions",
+          "name": "youtube_video",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "config",
+          "name": "get_config",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "logging",
+          "name": "logging"
+        }
+      ],
+      "defs": [
+        "BrainStatus",
+        "BuildPrompt",
+        "ConnectModel",
+        "GenerateResponse",
+        "InitializeBrain",
+        "LocalAI",
+        "SaveConversation"
+      ]
+    },
+    "backend\\ai\\memory.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "sqlite3",
+          "name": "sqlite3"
+        },
+        {
+          "type": "import",
+          "module": "os",
+          "name": "os"
+        },
+        {
+          "type": "from",
+          "module": "datetime",
+          "name": "datetime",
+          "as": null
+        }
+      ],
+      "defs": [
+        "ConnectDatabase",
+        "GetMemories",
+        "GetMemoryStatus",
+        "InitializeMemory",
+        "LoadContext",
+        "SaveMemory",
+        "SearchMemory"
+      ]
+    },
+    "backend\\ai\\reasoning.py": {
+      "imports": [
+        {
+          "type": "import",
+          "module": "re",
+          "name": "re"
+        }
+      ],
+      "defs": [
+        "Analyze",
+        "DetectIntent",
+        "DetectMode",
+        "ExtractApplication",
+        "ExtractMemory"
+      ]
+    },
+    "backend\\ai\\__init__.py": {
+      "imports": [],
+      "defs": []
+    },
+    "backend\\api\\server.py": {
+      "imports": [
+        {
+          "type": "from",
+          "module": "fastapi",
+          "name": "FastAPI",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "fastapi.middleware.cors",
+          "name": "CORSMiddleware",
+          "as": null
+        },
+        {
+          "type": "from",
+          "module": "pydantic",
+          "name": "BaseModel",
+          "as": null
+        },
+        {
+          "type": "import",
+          "module": "importlib",
+          "name": "importlib"
+        }
+      ],
+      "defs": [
+        "Chat",
+        "ChatRequest",
+        "ChatResponse",
+        "Home",
+        "MemoryStatus",
+        "OllamaStatus",
+        "Status",
+        "TimeNow"
+      ]
+    },
+    "backend\\api\\__init__.py": {
+      "imports": [],
+      "defs": []
+    }
+  },
+  "local_modules": [
+    "actions.__init__",
+    "actions.background_monitor",
+    "actions.browser_control",
+    "actions.code_helper",
+    "actions.computer_control",
+    "actions.computer_settings",
+    "actions.desktop",
+    "actions.dev_agent",
+    "actions.file_controller",
+    "actions.file_processor",
+    "actions.flight_finder",
+    "actions.game_updater",
+    "actions.open_app",
+    "actions.proactive",
+    "actions.reminder",
+    "actions.screen_processor",
+    "actions.send_message",
+    "actions.system_monitor",
+    "actions.weather_report",
+    "actions.web_search",
+    "actions.youtube_video",
+    "backend.__init__",
+    "backend.ai.__init__",
+    "backend.ai.brain",
+    "backend.ai.memory",
+    "backend.ai.reasoning",
+    "backend.api.__init__",
+    "backend.api.server",
+    "backend.main",
+    "config.__init__",
+    "core.__init__",
+    "core.installer",
+    "core.llm_client",
+    "core.logging_config",
+    "core.modes",
+    "core.ollama_integration",
+    "core.stt",
+    "core.timekeeper",
+    "core.tts",
+    "memory.__init__",
+    "memory.config_manager",
+    "memory.memory_manager"
+  ],
+  "external_imports": {},
+  "missing_local_imports": {},
+  "unresolved_project_imports": {
+    "actions\\flight_finder.py": [
+      "config",
+      "config",
+      "config"
+    ],
+    "actions\\game_updater.py": [
+      "config",
+      "config",
+      "config",
+      "config"
+    ],
+    "actions\\youtube_video.py": [
+      "config",
+      "config",
+      "config",
+      "config"
+    ],
+    "backend\\ai\\brain.py": [
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "actions",
+      "config"
+    ]
+  },
+  "parse_errors": {}
+}

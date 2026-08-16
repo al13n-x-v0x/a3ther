@@ -36,8 +36,14 @@ def get_base_dir() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
-BASE_DIR    = get_base_dir()
-CONFIG_PATH = BASE_DIR / "config" / "api_keys.json"
+BASE_DIR = get_base_dir()
+# Authoritative config lives in the OS app-data dir (see config/paths.py).
+try:
+    from config.paths import data_path as _data_path
+
+    CONFIG_PATH = _data_path("config/api_keys.json")
+except Exception:  # noqa: BLE001
+    CONFIG_PATH = BASE_DIR / "config" / "api_keys.json"
 
 _DEFAULTS = {
     "llm_url":      "http://localhost:11434",

@@ -1,0 +1,200 @@
+{
+  "servers": [
+    {
+      "name": "example-filesystem",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Sample stdio MCP server. Requires Node.js; enable from the Plugins dashboard."
+    },
+    {
+      "name": "example-http",
+      "transport": "http",
+      "url": "http://127.0.0.1:8001",
+      "headers": {},
+      "enabled": false,
+      "description": "Sample HTTP MCP server. Point at any JSON-RPC 2.0 endpoint."
+    },
+    {
+      "name": "native-devtools",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "native-devtools-mcp"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Computer use for desktop/Chrome/Android — screenshots, OCR, click, type (npx native-devtools-mcp). Source: github.com/sh3ll3x3c/native-devtools-mcp"
+    },
+    {
+      "name": "mcp-server-commands",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-commands"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Run shell commands on the host machine (npx mcp-server-commands). Source: github.com/g0t4/mcp-server-commands"
+    },
+    {
+      "name": "gsap-master",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "bruzethegreat-gsap-master-mcp-server@latest"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "GSAP animation expert — create/debug/optimize animations (npx bruzethegreat-gsap-master-mcp-server). Source: github.com/bruzethegreat/gsap-master-mcp-server"
+    },
+    {
+      "name": "mcp-video-analyzer",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-video-analyzer@latest"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Video → transcripts, key frames, OCR, metadata (npx mcp-video-analyzer). Source: github.com/guimatheus92/mcp-video-analyzer"
+    },
+    {
+      "name": "vibeframe",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vibeframe/mcp-server"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Frontier AI video generation on your own keys (Seedance/Runway/Veo/Kling). Source: github.com/vericontext/vibeframe"
+    },
+    {
+      "name": "video-editor",
+      "transport": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "video-editor"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Natural-language FFmpeg video editing (uv run video-editor). Source: github.com/kush36agrawal/video_editor_mcp"
+    },
+    {
+      "name": "aio-mcp",
+      "transport": "stdio",
+      "command": "aio-mcp",
+      "args": [],
+      "env": {},
+      "enabled": false,
+      "description": "All-in-one: AI search, RAG, GitLab/Jira/Confluence/YouTube/Calendar (Go binary — go install github.com/athapong/aio-mcp@latest). Source: github.com/athapong/aio-mcp"
+    },
+    {
+      "name": "scroll-analyzer",
+      "transport": "stdio",
+      "command": "node",
+      "args": [],
+      "env": {},
+      "enabled": false,
+      "description": "Analyze webpage scroll animations (GSAP/ScrollTrigger/Lenis) — install via the MCP catalog, which clones + builds it. Source: github.com/rob-kingsbury/mcp-scroll-analyzer"
+    },
+    {
+      "name": "filesystem",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Official filesystem server — secure file ops rooted at the '.' arg (edit it in mcp-servers.json). Source: modelcontextprotocol/servers"
+    },
+    {
+      "name": "official-memory",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Official knowledge-graph memory server — persistent entities/relations. Source: modelcontextprotocol/servers"
+    },
+    {
+      "name": "official-everything",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Official reference/test server — every tool shape for validating MCP clients. Source: modelcontextprotocol/servers"
+    },
+    {
+      "name": "official-sequential-thinking",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Official sequential-thinking server — step-by-step structured reasoning. Source: modelcontextprotocol/servers"
+    },
+    {
+      "name": "mobile-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mobilenext/mobile-mcp@latest"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Cross-platform mobile automation (iOS/Android) — taps, swipes, app control, screenshots. Source: github.com/mobile-next/mobile-mcp"
+    },
+    {
+      "name": "speech-mcp",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "-p",
+        "3.10.14",
+        "speech-mcp@latest"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Voice interface MCP — faster-whisper STT + 54 Kokoro TTS voices. Source: github.com/kvadratni/speech-mcp"
+    },
+    {
+      "name": "ble-mcp-server",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "ble-mcp-server"
+      ],
+      "env": {},
+      "enabled": false,
+      "description": "Bluetooth Low Energy MCP — scan, connect, read/write, subscribe (bleak). Source: github.com/es617/ble-mcp-server"
+    }
+  ]
+}

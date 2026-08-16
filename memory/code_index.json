@@ -1,0 +1,59 @@
+{
+  "files": {
+    "broken.py": {
+      "path": "broken.py",
+      "language": "python",
+      "size": 52,
+      "mtime": 1786198594.5972862,
+      "hash": "1beb294b1983628b37034e0a9c7b238f",
+      "symbols": [
+        {
+          "kind": "function",
+          "name": "compute",
+          "start": 1,
+          "end": 2,
+          "file": ""
+        }
+      ]
+    },
+    "code_index.json": {
+      "path": "code_index.json",
+      "language": "json",
+      "size": 711,
+      "mtime": 1786198594.1842773,
+      "hash": "642d5ab354f6d70e3406a6b029defd15",
+      "symbols": []
+    },
+    "demo.py": {
+      "path": "demo.py",
+      "language": "python",
+      "size": 109,
+      "mtime": 1786177676.233096,
+      "hash": "748e37d299ea73e4a7f7e807924a2b97",
+      "symbols": [
+        {
+          "kind": "function",
+          "name": "greet",
+          "start": 1,
+          "end": 2,
+          "file": ""
+        },
+        {
+          "kind": "class",
+          "name": "Robot",
+          "start": 5,
+          "end": 7,
+          "file": ""
+        },
+        {
+          "kind": "method",
+          "name": "speak",
+          "start": 6,
+          "end": 7,
+          "file": ""
+        }
+      ]
+    }
+  },
+  "updated": 1786198594.8827987
+}

@@ -7,9 +7,15 @@ def get_base_dir() -> Path:
         return Path(sys.executable).parent
     return Path(__file__).resolve().parent.parent
 
-BASE_DIR    = get_base_dir()
-CONFIG_DIR  = BASE_DIR / "config"
-CONFIG_FILE = CONFIG_DIR / "api_keys.json"
+BASE_DIR = get_base_dir()
+# Config lives in the OS app-data dir; repo mirror kept for compat.
+try:
+    from config.paths import data_path as _data_path
+
+    CONFIG_FILE = _data_path("config/api_keys.json")
+except Exception:  # noqa: BLE001
+    CONFIG_FILE = BASE_DIR / "config" / "api_keys.json"
+CONFIG_DIR = CONFIG_FILE.parent
 
 def ensure_config_dir() -> None:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -29,10 +35,15 @@ def save_api_keys(gemini_api_key: str) -> None:
 
     data["gemini_api_key"] = gemini_api_key.strip()
 
-    CONFIG_FILE.write_text(
-        json.dumps(data, indent=2),
-        encoding="utf-8"
-    )
+    payload = json.dumps(data, indent=2)
+    CONFIG_FILE.write_text(payload, encoding="utf-8")
+    # Keep the repo mirror in sync for the actions/* readers.
+    try:
+        mirror = BASE_DIR / "config" / "api_keys.json"
+        mirror.parent.mkdir(parents=True, exist_ok=True)
+        mirror.write_text(payload, encoding="utf-8")
+    except Exception:
+        pass
 
 def load_api_keys() -> dict:
     if not CONFIG_FILE.exists():

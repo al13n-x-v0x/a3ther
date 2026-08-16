@@ -11,8 +11,14 @@ def get_base_dir() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
-BASE_DIR         = get_base_dir()
-MEMORY_PATH      = BASE_DIR / "memory" / "long_term.json"
+BASE_DIR = get_base_dir()
+# Long-term memory lives in the OS app-data dir; repo copy migrates once.
+try:
+    from config.paths import data_path as _data_path
+
+    MEMORY_PATH = _data_path("memory/long_term.json")
+except Exception:  # noqa: BLE001
+    MEMORY_PATH = BASE_DIR / "memory" / "long_term.json"
 _lock            = Lock()
 MAX_VALUE_LENGTH = 380
 MEMORY_MAX_CHARS = 2200

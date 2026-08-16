@@ -1,0 +1,40 @@
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <radialGradient id="g1" cx="30%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#00d2ff" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#007ba7" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <circle cx="500" cy="500" r="420" fill="url(#g1)" />
+  </g>
+
+  <!-- simple grid lines to mimic a network globe -->
+  <g stroke="#00d2ff" stroke-opacity="0.18" stroke-width="1">
+    <!-- meridians -->
+    <path d="M500,80 A420,420 0 0,1 500,920" fill="none"/>
+    <path d="M500,80 A420,420 0 0,0 500,920" fill="none"/>
+    <path d="M200,500 A300,300 0 0,1 800,500" fill="none"/>
+    <path d="M120,360 A380,380 0 0,1 880,640" fill="none"/>
+    <path d="M120,640 A380,380 0 0,1 880,360" fill="none"/>
+  </g>
+
+  <!-- network nodes -->
+  <g fill="#00d2ff" fill-opacity="0.9">
+    <circle cx="680" cy="320" r="6"/>
+    <circle cx="340" cy="370" r="6"/>
+    <circle cx="460" cy="620" r="6"/>
+    <circle cx="620" cy="520" r="6"/>
+    <circle cx="300" cy="540" r="6"/>
+  </g>
+
+</svg>

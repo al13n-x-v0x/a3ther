@@ -27,3 +27,16 @@ win10toast; sys_platform == "win32"
 pywinauto; sys_platform == "win32"
 pywin32; sys_platform == "win32"
 qrcode[pil]
+
+# A3THER extensions — LLM gateway, MCP host, remote dev mode
+openai
+anthropic
+paramiko
+
+# A3THER features — native voice interface, hybrid memory, codebase agent
+# (all optional — the system degrades gracefully without them)
+# voice:      vosk / pvporcupine / faster-whisper / edge-tts
+# memory:     sentence-transformers
+
+# A3THER HUD — real Bluetooth device discovery (required for live BT scans)
+bleak

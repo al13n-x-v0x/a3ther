@@ -1,0 +1,77 @@
+/* A.3.T.H.E.R — Agent Swarm Console */
+:root {
+  --bg: #02050a; --panel: rgba(10,18,32,.72); --edge: rgba(61,220,255,.22);
+  --cyan: #7df9ff; --cyan-dim: #3ddcff; --green: #34f5a2; --orange: #ffb454;
+  --red: #ff5d6c; --blue: #3b82f6; --text: #d7e3f2; --muted: #5e6a7e;
+  --mono: "Consolas", "SF Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: "Rajdhani", "Segoe UI", sans-serif; }
+.bg { position: fixed; inset: 0; z-index: -1; background:
+  radial-gradient(1000px 500px at 80% -10%, rgba(61,220,255,.10), transparent 60%),
+  radial-gradient(800px 500px at 10% 110%, rgba(59,130,246,.10), transparent 60%), #02050a; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 32px;
+  border-bottom: 1px solid var(--edge); background: rgba(4,10,20,.85); position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(10px); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  background: linear-gradient(135deg, rgba(61,220,255,.25), rgba(59,130,246,.15));
+  border: 1px solid var(--cyan-dim); box-shadow: 0 0 24px rgba(61,220,255,.35), inset 0 0 14px rgba(61,220,255,.25); }
+.logo span { font-family: "Orbitron", sans-serif; font-weight: 800; color: var(--cyan); font-size: 22px; }
+.eyebrow { font-family: "Orbitron", sans-serif; font-size: 10px; letter-spacing: 3px; color: var(--cyan-dim); }
+.brand h1 { font-family: "Orbitron", sans-serif; font-size: 20px; letter-spacing: 1px; }
+.sub { color: var(--muted); font-size: 13px; }
+.top-status { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.status-block { text-align: right; }
+.status-block h3 { font-family: "Orbitron", sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+.status-block span { font-weight: 700; color: var(--cyan); font-size: 15px; }
+.back-link { color: var(--cyan); text-decoration: none; font-weight: 600; font-size: 14px;
+  border: 1px solid var(--edge); border-radius: 8px; padding: 8px 14px; transition: background .2s, box-shadow .2s; }
+.back-link:hover { background: rgba(61,220,255,.12); box-shadow: 0 0 18px rgba(61,220,255,.25); }
+
+.layout { display: grid; grid-template-columns: 380px 1fr; gap: 20px; padding: 24px 32px 60px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+.panel { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 18px 20px; backdrop-filter: blur(8px); box-shadow: 0 10px 40px rgba(0,0,0,.45); animation: rise .5s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.kicker { font-family: "Orbitron", sans-serif; font-size: 9px; letter-spacing: 3px; color: var(--cyan-dim); }
+.panel-head h2 { font-family: "Orbitron", sans-serif; font-size: 16px; letter-spacing: 1px; }
+.hint { margin-top: 12px; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.icon-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; }
+.icon-btn:hover { color: var(--cyan); }
+
+.dispatch-row { display: flex; gap: 10px; }
+.dispatch-row input { flex: 1; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+  color: var(--text); padding: 10px 12px; font-family: var(--mono); font-size: 13px; }
+.dispatch-row input:focus { outline: none; border-color: var(--cyan-dim); box-shadow: 0 0 12px rgba(61,220,255,.2); }
+.btn { font-family: "Rajdhani", sans-serif; font-weight: 700; font-size: 13.5px; color: var(--text);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; padding: 8px 14px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all .18s; }
+.btn:hover { border-color: var(--cyan-dim); color: var(--cyan); box-shadow: 0 0 14px rgba(61,220,255,.25); }
+.btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+.btn.primary { background: linear-gradient(135deg, rgba(61,220,255,.35), rgba(59,130,246,.3)); border-color: var(--cyan-dim); color: #eaffff; }
+.btn.primary:hover { box-shadow: 0 0 22px rgba(61,220,255,.5); }
+
+.plan { margin-top: 14px; }
+.plan.hidden { display: none; }
+.step-chip { display: inline-flex; gap: 6px; align-items: center; margin: 4px 6px 0 0; padding: 5px 10px;
+  border-radius: 20px; border: 1px solid rgba(61,220,255,.3); background: rgba(61,220,255,.06);
+  font-family: var(--mono); font-size: 11.5px; color: var(--cyan-dim); }
+
+.console { background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
+  padding: 14px; height: 60vh; overflow-y: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; }
+.line { white-space: pre-wrap; word-break: break-word; padding: 1px 0; border-bottom: 1px dashed rgba(255,255,255,.04); }
+.line .tag { font-weight: 700; margin-right: 6px; }
+.tag.plan { color: var(--blue); } .tag.start { color: var(--cyan); } .tag.transfer { color: var(--orange); }
+.tag.event { color: var(--cyan-dim); } .tag.result { color: var(--green); } .tag.done { color: var(--green); }
+.tag.error { color: var(--red); } .line .agent { color: var(--muted); margin-right: 6px; }
+
+#toasts { position: fixed; top: 18px; right: 18px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+.toast { min-width: 240px; max-width: 380px; background: #0a1220; border: 1px solid var(--edge); border-left: 3px solid var(--cyan);
+  border-radius: 10px; padding: 12px 14px; box-shadow: 0 10px 40px rgba(0,0,0,.5); animation: toast-in .25s ease both; }
+.toast h4 { font-family: "Orbitron", sans-serif; font-size: 11px; letter-spacing: 1px; margin-bottom: 3px; }
+.toast p { font-size: 13px; }
+.toast.err { border-left-color: var(--red); } .toast.err h4 { color: var(--red); }
+@keyframes toast-in { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }

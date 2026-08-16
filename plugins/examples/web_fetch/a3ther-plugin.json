@@ -1,0 +1,23 @@
+{
+  "name": "web-fetch",
+  "version": "1.0.0",
+  "description": "Fetch a URL and return its status, title and a text snippet. Demonstrates the Node bridge.",
+  "author": "AL13N Industries",
+  "type": "javascript",
+  "entry": "plugin.js",
+  "capabilities": [
+    {
+      "name": "fetch_page",
+      "description": "Fetch a URL and return HTTP status, page title and a short text snippet.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "Absolute http(s) URL" }
+        },
+        "required": ["url"]
+      }
+    }
+  ],
+  "dependencies": [],
+  "enabled": false
+}

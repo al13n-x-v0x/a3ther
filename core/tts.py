@@ -103,28 +103,82 @@ def _play_audio_bytes(audio_bytes: bytes) -> None:
 # ---------------------------------------------------------------------------
 
 class EdgeTTSEngine:
-    """Microsoft EdgeTTS – free, requires internet."""
+    """Microsoft EdgeTTS – free, requires internet.
+
+    Auto-falls back to the Windows SAPI voice (:class:`SapiTTSEngine`) when
+    the internet stream fails or the audio decoder is unavailable, so the
+    assistant ALWAYS speaks — never a silent failure.
+    """
 
     def __init__(self, voice: str = "en-US-GuyNeural"):
         self.voice = voice
+        self._fallback = SapiTTSEngine()
 
     def speak(self, text: str) -> None:
-        loop = asyncio.new_event_loop()
         try:
-            audio_bytes = loop.run_until_complete(self._synth(text))
-        finally:
-            loop.close()
-        if audio_bytes:
-            _play_audio_bytes(audio_bytes)
+            loop = asyncio.new_event_loop()
+            try:
+                audio_bytes = loop.run_until_complete(self._synth(text))
+            finally:
+                loop.close()
+            if audio_bytes:
+                _play_audio_bytes(audio_bytes)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[TTS] EdgeTTS failed ({type(exc).__name__}: {exc}) — falling back to Windows voice…")
+            self._fallback.speak(text)
 
     async def _synth(self, text: str) -> bytes:
+        import aiohttp
         import edge_tts
-        comm = edge_tts.Communicate(text, self.voice)
-        buf  = bytearray()
-        async for chunk in comm.stream():
-            if chunk["type"] == "audio":
-                buf.extend(chunk["data"])
-        return bytes(buf)
+
+        # aiohttp prefers the c-ares resolver when `aiodns` is installed; on
+        # some networks c-ares cannot reach the configured DNS servers while
+        # the OS resolver works fine, so Edge TTS died with "Could not contact
+        # DNS servers" and the robot SAPI voice took over. Force the threaded
+        # (system) resolver so natural Edge voices always connect.
+        connector = aiohttp.TCPConnector(resolver=aiohttp.resolver.ThreadedResolver())
+        try:
+            comm = edge_tts.Communicate(text, self.voice, connector=connector)
+            buf  = bytearray()
+            async for chunk in comm.stream():
+                if chunk["type"] == "audio":
+                    buf.extend(chunk["data"])
+            return bytes(buf)
+        finally:
+            await connector.close()
+
+
+class SapiTTSEngine:
+    """Windows native SAPI speech (pyttsx3) — fully offline, zero deps.
+
+    Guaranteed fallback so the voice always speaks, even with no internet
+    or no audio decoder package. Selecting a voice is best-effort; unknown
+    voice names silently fall back to the default system voice.
+    """
+
+    def __init__(self, voice: str | None = None):
+        self.voice = voice
+
+    def speak(self, text: str) -> None:
+        try:
+            import pyttsx3  # noqa: PLC0415
+        except Exception as exc:  # noqa: BLE001
+            print(f"[TTS] No fallback voice available: {exc}")
+            return
+        engine = pyttsx3.init()
+        try:
+            if self.voice:
+                try:
+                    engine.setProperty("voice", self.voice)
+                except Exception:  # noqa: BLE001 — unknown voice → default
+                    pass
+            engine.say(text)
+            engine.runAndWait()
+        finally:
+            try:
+                engine.stop()
+            except Exception:  # noqa: BLE001
+                pass
 
 
 # ---------------------------------------------------------------------------
@@ -426,17 +480,17 @@ class TTSPlayer:
 # Factory
 # ---------------------------------------------------------------------------
 
-def create_tts_player(config: dict) -> TTSPlayer:
-    engine_name = config.get("tts_engine", "edgetts").lower()
+def create_tts_player(config: dict, overrides: dict | None = None) -> TTSPlayer:
+    merged = {**(config or {}), **(overrides or {})}
+    engine_name = str(merged.get("tts_engine", "edgetts")).lower()
+    voice = str(merged.get("tts_voice", "en-US-GuyNeural"))
+    speed = float(merged.get("tts_speed", 1.0))
     if engine_name == "kokoro":
-        voice  = config.get("tts_voice", "af_heart")
-        speed  = float(config.get("tts_speed", 1.0))
         engine = KokoroTTSEngine(voice=voice, speed=speed)
     elif engine_name == "elevenlabs":
-        api_key  = config.get("elevenlabs_api_key", "")
-        voice_id = config.get("tts_voice", "pNInz6obpgDQGcFmaJgB")
-        engine   = ElevenLabsTTSEngine(api_key=api_key, voice_id=voice_id)
+        api_key = str(merged.get("elevenlabs_api_key", ""))
+        voice_id = str(merged.get("tts_voice", "pNInz6obpgDQGcFmaJgB"))
+        engine = ElevenLabsTTSEngine(api_key=api_key, voice_id=voice_id)
     else:   # edgetts (default)
-        voice  = config.get("tts_voice", "en-US-GuyNeural")
         engine = EdgeTTSEngine(voice=voice)
     return TTSPlayer(engine)

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#02050a" />
+  <title>A.3.T.H.E.R — Extensions Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="/plugins/plugins.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><span>A</span></div>
+      <div>
+        <p class="eyebrow">A.3.T.H.E.R // EXTENSIONS</p>
+        <h1>Extensions Manager</h1>
+        <p class="sub">Multi-model gateway · Plugins · MCP Host · Remote Dev · Autopilot</p>
+      </div>
+    </div>
+    <div class="top-status">
+      <div class="status-block"><h3>LLM ROUTES</h3><span id="stat-llm">—</span></div>
+      <div class="status-block"><h3>PLUGINS</h3><span id="stat-plugins">—</span></div>
+      <div class="status-block"><h3>MCP SERVERS</h3><span id="stat-mcp">—</span></div>
+      <a class="back-link" href="/"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- ============ LLM ROUTING ============ -->
+    <section class="panel" id="llm-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">01 / ROUTING</span>
+          <h2>LLM Gateway</h2>
+        </div>
+        <span class="pill" id="llm-pill">—</span>
+      </div>
+      <div id="llm-list" class="rows"></div>
+      <p class="hint">
+        Keys resolve from <code>A3THER_*_API_KEY</code> env (or <code>.env</code>),
+        then <code>config/api_keys.json</code>. On 429/5xx the router falls back natively.
+      </p>
+    </section>
+
+    <!-- ============ PLUGINS ============ -->
+    <section class="panel panel-wide" id="plugins-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">02 / EXTENSIONS</span>
+          <h2>Plugins</h2>
+        </div>
+        <div class="head-actions">
+          <button class="btn ghost" id="reload-all" type="button"><i class="fa-solid fa-rotate"></i> Reload all</button>
+        </div>
+      </div>
+      <div id="plugins-grid" class="cards"></div>
+      <p class="hint">
+        Drop a folder with an <code>a3ther-plugin.json</code> into <code>plugins/</code> —
+        Python or JavaScript — and it hot-loads on the next scan.
+      </p>
+    </section>
+
+    <!-- ============ MCP SERVERS ============ -->
+    <section class="panel" id="mcp-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">03 / MCP HOST</span>
+          <h2>MCP Servers</h2>
+        </div>
+        <span class="pill" id="mcp-pill">—</span>
+      </div>
+      <div id="mcp-list" class="rows"></div>
+      <p class="hint">
+        Configured in <code>config/mcp-servers.json</code> (stdio or HTTP JSON-RPC 2.0).
+        Toggles persist in <code>config/mcp_state.json</code>.
+      </p>
+    </section>
+
+    <!-- ============ MCP CATALOG ============ -->
+    <section class="panel panel-wide" id="catalog-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">04 / CATALOG</span>
+          <h2>MCP Server Catalog</h2>
+        </div>
+        <div class="head-actions">
+          <input id="cat-search" type="text" placeholder="search servers…" autocomplete="off" spellcheck="false" />
+          <select id="cat-source" aria-label="Catalog source">
+            <option value="">Curated</option>
+            <option value="punkpeye">Community · punkpeye</option>
+            <option value="wong2">Community · wong2</option>
+            <option value="official">Official Registry</option>
+          </select>
+        </div>
+      </div>
+      <div id="catalog-list" class="rows"></div>
+      <p class="hint">
+        One-click install — <code>npx</code>/<code>uv</code>/<code>go</code> servers are written to
+        <code>mcp-servers.json</code> and connected; git servers are cloned + built automatically.
+        Community tabs pull live from the awesome lists and the official registry.
+      </p>
+    </section>
+
+    <!-- ============ MCP TOOLS ============ -->
+    <section class="panel" id="tools-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">05 / TOOLS</span>
+          <h2>Connected MCP Tools</h2>
+        </div>
+        <span class="pill" id="tools-pill">—</span>
+      </div>
+      <div id="tools-list" class="tools"></div>
+      <p class="hint">
+        Tools are addressed as <code>server__tool</code> and are also available to the
+        AI brain's tool pipeline.
+      </p>
+    </section>
+
+    <!-- ============ REMOTE SERVERS ============ -->
+    <section class="panel" id="remote-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">06 / REMOTE DEV</span>
+          <h2>SSH Servers</h2>
+        </div>
+        <span class="pill" id="remote-pill">—</span>
+      </div>
+      <div id="remote-list" class="rows"></div>
+      <p class="hint">
+        Profiles live in <code>config/servers.json</code> or <code>A3THER_SSH_*</code> env.
+        Trigger sessions with “a3ther, act as a dev on &lt;server&gt;”.
+      </p>
+    </section>
+
+    <!-- ============ AUTOPILOT ============ -->
+    <section class="panel panel-wide" id="autopilot-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">07 / SELF-HEALING</span>
+          <h2>Freaky-Fix Autopilot</h2>
+        </div>
+      </div>
+      <div class="autopilot-form">
+        <input id="ap-command" type="text" placeholder="command to run, e.g. python tools/check_api.py" autocomplete="off" spellcheck="false" />
+        <input id="ap-cwd" type="text" placeholder="cwd (leave empty for repo root)" autocomplete="off" spellcheck="false" />
+        <button class="btn primary" id="ap-run" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Run &amp; Self-Fix</button>
+      </div>
+      <div id="ap-output" class="console">
+        <p class="console-empty">Run a command to start the loop — failures are diagnosed, patched by the strongest LLM, and re-run up to 3 times.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Tool-call modal -->
+  <div class="modal-backdrop" id="modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">Call tool</h3>
+        <button class="icon-btn" id="modal-close" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <textarea id="modal-args" spellcheck="false" placeholder='{ "query": "..." }'></textarea>
+      <div class="modal-foot">
+        <button class="btn ghost" id="modal-cancel" type="button">Cancel</button>
+        <button class="btn primary" id="modal-go" type="button"><i class="fa-solid fa-play"></i> Invoke</button>
+      </div>
+      <pre id="modal-result" class="modal-result"></pre>
+    </div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script src="/plugins/plugins.js"></script>
+</body>
+</html>

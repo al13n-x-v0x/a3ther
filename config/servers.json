@@ -1,0 +1,14 @@
+{
+  "servers": [
+    {
+      "name": "example-prod",
+      "host": "192.168.1.10",
+      "port": 22,
+      "user": "deploy",
+      "key_path": "~/.ssh/id_ed25519",
+      "timeout": 15,
+      "strict_host_checking": true,
+      "description": "Rename me and point at a real server. Prefer key_path over password; passwords should come from A3THER_SSH_PASSWORD."
+    }
+  ]
+}

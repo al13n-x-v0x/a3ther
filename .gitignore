@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# A3THER runtime/agent artifacts
+.freebuff/
+*.log
+*.db
+*.db-shm
+*.db-wal
+
+# Build output — the packaged exe is built locally via a3ther.spec
+# (599 MB bundle; keep it out of git, it's reproducible from source)
+build/
+dist/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Secrets
+config/api_keys.json
+config/client_secrets.json

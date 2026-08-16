@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smoke_api_site</title>
+    <meta name="description" content="An API smoke site">
+    <style>
+        :root{--bg:#05060f;--fg:#eaffff;--accent:#7df9ff;--accent2:#b44bff;--panel:rgba(10,18,32,.72);--edge:rgba(125,249,255,.25);}
+        
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        #bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, transparent 0%, var(--bg) 90%);
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(125, 249, 255, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--edge);
+            border-radius: 4px;
+            padding: 3rem;
+            margin-bottom: 4rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: var(--accent2);
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .panel p {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: rgba(234, 255, 255, 0.8);
+        }
+
+        .code-snippet {
+            background: rgba(0,0,0,0.4);
+            padding: 1.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--accent);
+            border-left: 2px solid var(--accent2);
+            margin-top: 2rem;
+            overflow-x: auto;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            border: 1px solid var(--edge);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-card span {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        footer {
+            text-align: center;
+            padding: 4rem;
+            font-size: 0.8rem;
+            opacity: 0.4;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg"></div>
+
+    <div class="content-wrapper">
+        <section class="hero">
+            <h1>SMOKE_API</h1>
+            <p>High-Density Data Transmission</p>
+        </section>
+
+        <div class="container">
+            <section class="panel">
+                <h2>Real-Time Vapor Metrics</h2>
+                <p>Integrate our proprietary smoke-simulation endpoints into your application. We provide granular control over particle buoyancy, opacity gradients, and wind-vector calculations via a simple REST interface.</p>
+                <div class="code-snippet">
+                    curl -X GET "https://api.smoke.io/v1/simulate?density=0.85&vector=nord" <br>
+                    -H "Authorization: Bearer SMOKE_KEY_..."
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Global Infrastructure</h2>
+                <p>Our edge nodes are distributed across 42 regions, ensuring that your smoke data reaches its destination with sub-10ms latency. Optimized for WebGL visualizations and high-load industrial monitoring systems.</p>
+                <div class="stats">
+                    <div class="stat-card">
+                        <span>99.99%</span>
+                        Uptime SLA
+                    </div>
+                    <div class="stat-card">
+                        <span>&lt; 15ms</span>
+                        Avg Latency
+                    </div>
+                    <div class="stat-card">
+                        <span>256-bit</span>
+                        Encryption
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            &copy; 2023 SMOKE_API_SITE // PROTOCOL_NEON
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // NEON GRID
+        const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+        renderer.setSize(innerWidth,innerHeight);document.getElementById('bg').appendChild(renderer.domElement);
+        const grid=new THREE.GridHelper(40,40,0x7df9ff,0x7df9ff);grid.material.opacity=.35;grid.material.transparent=true;scene.add(grid);
+        const geo=new THREE.IcosahedronGeometry(2,
