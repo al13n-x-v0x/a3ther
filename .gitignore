@@ -17,6 +17,9 @@ venv/
 # (599 MB bundle; keep it out of git, it's reproducible from source)
 build/
 dist/
+# Generated content (websites, videos, screenshots)
+Output/
+localpycs/
 
 # OS
 Thumbs.db

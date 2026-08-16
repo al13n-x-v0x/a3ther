@@ -82,6 +82,10 @@ _SCOPES = [
     "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
+# State of the one-click browser sign-in (run_local_server runs in a thread
+# because it blocks until Google redirects back to the loopback port).
+_BROWSER_AUTH: dict = {"state": "idle", "error": "", "started_at": 0}
+
 
 def connect_status() -> dict:
     """Is YouTube linked? (token present + client_secrets present)."""
@@ -93,6 +97,10 @@ def connect_status() -> dict:
         "client_secrets_path": str(secrets),
         "channel": token.get("channel_title") or None,
         "setup_needed": not secrets.exists(),
+        # One-click browser sign-in state ("idle" | "running" | "done" | "error")
+        "auth_in_progress": _BROWSER_AUTH.get("state") == "running",
+        "auth_state": _BROWSER_AUTH.get("state", "idle"),
+        "auth_error": _BROWSER_AUTH.get("error", ""),
         "setup_steps": (
             "1) Go to console.cloud.google.com → create a project → enable "
             "'YouTube Data API v3'. "
@@ -117,8 +125,69 @@ def get_auth_url() -> dict:
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
+def _save_creds(creds) -> dict:
+    """Persist an OAuth credential object and fetch the channel name."""
+    token = {
+        "token": creds.token,
+        "refresh_token": creds.refresh_token,
+        "token_uri": creds.token_uri,
+        "client_id": creds.client_id,
+        "client_secret": creds.client_secret,
+    }
+    try:
+        service = _service(creds)
+        resp = service.channels().list(part="snippet", mine=True).execute()
+        items = resp.get("items") or []
+        if items:
+            token["channel_title"] = items[0]["snippet"]["title"]
+    except Exception:  # noqa: BLE001
+        pass
+    _save_json(_TOKEN_FILE, token)
+    return {"ok": True, "linked": True, "channel": token.get("channel_title")}
+
+
+def browser_auth_start() -> dict:
+    """Start the one-click Google sign-in.
+
+    Runs ``InstalledAppFlow.run_local_server`` on a background thread: it opens
+    the user's default web browser at the Google consent page, waits on a local
+    loopback port for the redirect, exchanges the code automatically, and stores
+    the refresh token — no copy/paste required. Callers poll ``connect_status``
+    until ``auth_state`` is "done" or "error".
+    """
+    secrets = _client_secrets_path()
+    if not secrets.exists():
+        return {"ok": False, "error": connect_status()["setup_steps"]}
+    with threading.Lock():
+        if _BROWSER_AUTH.get("state") == "running":
+            return {"ok": True, "started": True, "note": "sign-in already in progress"}
+        _BROWSER_AUTH.update({"state": "running", "error": "", "started_at": time.time()})
+    threading.Thread(
+        target=_browser_auth_worker, daemon=True, name="yt-browser-auth"
+    ).start()
+    return {"ok": True, "started": True, "note": "browser opened — approve the Google sign-in"}
+
+
+def _browser_auth_worker() -> None:
+    """Blocking worker: run_local_server opens the browser + loopback listener."""
+    try:
+        from google_auth_oauthlib.flow import InstalledAppFlow
+
+        flow = InstalledAppFlow.from_client_secrets_file(
+            str(_client_secrets_path()), _SCOPES
+        )
+        # port=0 → random free loopback port; prompt=consent → refresh token always.
+        creds = flow.run_local_server(port=0, prompt="consent", open_browser=True)
+        result = _save_creds(creds)
+        _BROWSER_AUTH.update({"state": "done", "error": ""})
+        LOGGER.info("YouTube linked via browser flow: %s", result.get("channel"))
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.exception("YouTube browser auth failed")
+        _BROWSER_AUTH.update({"state": "error", "error": f"{type(exc).__name__}: {exc}"})
+
+
 def exchange_code(code: str) -> dict:
-    """Exchange the consent-page code for a stored refresh token."""
+    """Exchange the consent-page code for a stored refresh token (manual fallback)."""
     secrets = _client_secrets_path()
     if not secrets.exists():
         return {"ok": False, "error": connect_status()["setup_steps"]}
@@ -127,25 +196,7 @@ def exchange_code(code: str) -> dict:
 
         flow = InstalledAppFlow.from_client_secrets_file(str(secrets), _SCOPES)
         flow.fetch_token(code=code.strip())
-        creds = flow.credentials
-        token = {
-            "token": creds.token,
-            "refresh_token": creds.refresh_token,
-            "token_uri": creds.token_uri,
-            "client_id": creds.client_id,
-            "client_secret": creds.client_secret,
-        }
-        # Grab the channel name for a friendly status.
-        try:
-            service = _service(creds)
-            resp = service.channels().list(part="snippet", mine=True).execute()
-            items = resp.get("items") or []
-            if items:
-                token["channel_title"] = items[0]["snippet"]["title"]
-        except Exception:  # noqa: BLE001
-            pass
-        _save_json(_TOKEN_FILE, token)
-        return {"ok": True, "linked": True, "channel": token.get("channel_title")}
+        return _save_creds(flow.credentials)
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": f"code exchange failed: {type(exc).__name__}: {exc}"}
 

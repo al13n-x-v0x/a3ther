@@ -132,6 +132,18 @@ def youtube_auth_url():
         return JSONResponse({"error": str(exc)}, status_code=500)
 
 
+@features_router.post("/youtube/auth/browser")
+def youtube_auth_browser():
+    """Start one-click Google sign-in: opens the default browser, auto-completes
+    via loopback redirect (no copy/paste). Poll /youtube/status until linked."""
+    try:
+        from youtube_upload import browser_auth_start
+
+        return browser_auth_start()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 @features_router.post("/youtube/auth-code")
 def youtube_auth_code(body: YoutubeAuthCodeRequest):
     try:

@@ -1108,6 +1108,7 @@
           <p class="settings-note" id="set-yt-status">Connect your channel, propose a rendered video, and A3THER writes clickable title + tags + description. You approve → it uploads. The auto-reply bot answers comments to grow subs.</p>
           <div class="settings-grid">
             <button class="settings-btn" id="set-yt-connect"><i class="fa-solid fa-youtube"></i> Connect YouTube</button>
+            <button class="settings-btn" id="set-yt-manual"><i class="fa-solid fa-key"></i> Manual Code</button>
             <button class="settings-btn" id="set-yt-bot"><i class="fa-solid fa-comment-dots"></i> Auto-Reply Bot</button>
             <button class="settings-btn" id="set-yt-refresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
           </div>
@@ -1392,6 +1393,7 @@
       const ytStatus = body.querySelector("#set-yt-status");
       const ytApprovals = body.querySelector("#set-yt-approvals");
       const ytConnect = body.querySelector("#set-yt-connect");
+      const ytManual = body.querySelector("#set-yt-manual");
       const ytBot = body.querySelector("#set-yt-bot");
       const ytRefresh = body.querySelector("#set-yt-refresh");
       const loadYt = async () => {
@@ -1399,7 +1401,9 @@
         if (!s) return;
         ytStatus.innerHTML = s.linked
           ? `<span class="ok">✓ YouTube linked${s.channel ? " — " + this.esc(s.channel) : ""}. Bot ${s.running ? "RUNNING" : "off"}.</span>`
-          : (s.setup_needed ? `✘ ${this.esc(s.setup_steps)}` : "Not linked yet — hit Connect YouTube.");
+          : (s.auth_in_progress
+            ? `<span class="ok"><i class="fa-solid fa-spinner fa-spin"></i> Sign-in in progress — check your browser.</span>`
+            : (s.setup_needed ? `✘ ${this.esc(s.setup_steps)}` : "Not linked yet — hit Connect YouTube."));
         const a = await API.get("/api/youtube/approvals");
         if (ytApprovals && a && a.approvals && a.approvals.length) {
           ytApprovals.innerHTML = a.approvals.slice(0, 4).map((ap) => `
@@ -1423,13 +1427,44 @@
         }
       };
       if (ytConnect) {
+        // One-click: opens the default browser at Google's sign-in, auto-completes
+        // via loopback redirect. Poll /status until linked or failed.
         ytConnect.addEventListener("click", async () => {
           const s = await API.get("/api/youtube/status");
           if (!s) { Toasts.err("backend offline"); return; }
           if (s.linked) { Toasts.ok("YouTube already linked."); loadYt(); return; }
+          if (s.auth_in_progress) { Toasts.warn("Sign-in already in progress — check your browser."); return; }
+          const r = await API.post("/api/youtube/auth/browser", {});
+          if (!r || !r.ok) { Toasts.err((r && r.error) || "could not start sign-in"); return; }
+          Toasts.ok("Opened your browser — sign in with Google and approve.");
+          ytStatus.innerHTML = `<span class="ok"><i class="fa-solid fa-spinner fa-spin"></i> Waiting for your Google sign-in…</span>`;
+          const t0 = Date.now();
+          const poll = setInterval(async () => {
+            const st = await API.get("/api/youtube/status");
+            if (!st) { clearInterval(poll); return; }
+            if (st.linked) {
+              clearInterval(poll);
+              Toasts.ok(`YouTube linked${st.channel ? " — " + st.channel : ""}!`);
+              loadYt(); return;
+            }
+            if (st.auth_state === "error") {
+              clearInterval(poll);
+              Toasts.err(st.auth_error || "sign-in failed — try again");
+              loadYt(); return;
+            }
+            if (Date.now() - t0 > 300000) {
+              clearInterval(poll);
+              Toasts.warn("Sign-in timed out (5 min) — click Connect YouTube to retry.");
+              loadYt(); return;
+            }
+          }, 2500);
+        });
+        // Manual fallback: copy-paste the consent code (works for web-type clients).
+        ytManual.addEventListener("click", async () => {
           const u = await API.get("/api/youtube/auth-url");
           if (!u || !u.ok) { Toasts.err((u && u.error) || "no client_secrets.json — follow the setup steps"); return; }
-          const code = window.prompt("Open this URL in your browser, sign in, approve, then paste the code here:\n\n" + u.url);
+          window.open(u.url, "_blank");
+          const code = window.prompt("Sign in + approve in the browser that opened, then paste the code here:");
           if (!code) return;
           const r = await API.post("/api/youtube/auth-code", { code });
           if (r && r.ok) { Toasts.ok("YouTube linked!"); } else { Toasts.err((r && r.error) || "link failed"); }
