@@ -182,10 +182,12 @@ def _save_creds(creds) -> dict:
         items = resp.get("items") or []
         if items:
             token["channel_title"] = items[0]["snippet"]["title"]
-    except Exception:  # noqa: BLE001
-        pass
+        else:
+            token["channel_error"] = "no channel on this account (or no channel selected)"
+    except Exception as exc:  # noqa: BLE001
+        token["channel_error"] = f"{type(exc).__name__}: {exc}"
     _save_json(_TOKEN_FILE, token)
-    return {"ok": True, "linked": True, "channel": token.get("channel_title")}
+    return {"ok": True, "linked": True, "channel": token.get("channel_title"), "channel_error": token.get("channel_error")}
 
 
 def browser_auth_start() -> dict:
@@ -214,8 +216,10 @@ def _browser_auth_worker() -> None:
     """Blocking worker: run_local_server opens the browser + loopback listener."""
     try:
         flow = _flow()
-        # port=0 → random free loopback port; prompt=consent → refresh token always.
-        creds = flow.run_local_server(port=0, prompt="consent", open_browser=True)
+        # port=0 → random free loopback port. prompt="select_account consent"
+        # always shows the account chooser so the user picks the right Google
+        # account (the one owning the channel they want), then re-consents.
+        creds = flow.run_local_server(port=0, prompt="select_account consent", open_browser=True)
         result = _save_creds(creds)
         _BROWSER_AUTH.update({"state": "done", "error": ""})
         LOGGER.info("YouTube linked via browser flow: %s", result.get("channel"))
