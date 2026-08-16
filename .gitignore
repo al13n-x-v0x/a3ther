@@ -25,3 +25,4 @@ Thumbs.db
 # Secrets
 config/api_keys.json
 config/client_secrets.json
+config/certs/jarvis.key
