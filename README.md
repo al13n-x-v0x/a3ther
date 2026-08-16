@@ -130,6 +130,50 @@ Or just launch the app and press **Enter** to skip — it runs offline with Olla
 
 ---
 
+## 🔑 BYOK — the Bring Your Own Key / Credentials model
+
+A3THER **never ships, bundles, or commits any keys**. Every provider, service,
+and connected device uses **your** credentials — you bring them, you own them,
+and they stay on your machine. Nothing is baked into the exe or the repo.
+
+### What you bring and where it goes
+
+| Service | What to bring | Where it lives | Gitignored? |
+|---------|---------------|----------------|-------------|
+| **LLM providers** (Gemini, OpenAI, DeepSeek, Groq, Anthropic) | API key | `config/api_keys.json`, or **env-first**: `A3THER_GEMINI_API_KEY`, `A3THER_OPENAI_API_KEY`, `A3THER_DEEPSEEK_API_KEY`, `A3THER_GROQ_API_KEY`, `A3THER_ANTHROPIC_API_KEY` | ✅ |
+| **YouTube** (upload, publish, auto-reply bot) | Google Cloud OAuth **desktop** client (`client_secrets.json`, YouTube Data API v3 enabled) | `config/client_secrets.json` — the app opens your browser for a one-click Google sign-in and stores the refresh token under `%LOCALAPPDATA%\A3THER\youtube\` | ✅ |
+| **SSH / Remote Dev** | Host, user, key path per server | `config/servers.json` (or environment variables) | ✅ |
+| **MCP servers** | Your own `mcp-servers.json` with stdio/HTTP server entries | repo root `mcp-servers.json` | ✅ |
+| **Phone / device control** | ADB or a paired companion (APK) | `%LOCALAPPDATA%\A3THER\` | ✅ |
+
+### How the key resolution works
+
+1. **Environment variables first** — set `A3THER_GEMINI_API_KEY=...` (or any `A3THER_*_API_KEY`) and A3THER picks it up instantly, no files touched.
+2. **Then local config** — `config/api_keys.json` (`{"gemini_api_key": "..."}`), which the app writes from Settings → provider.
+3. **Then offline fallback** — no key at all → local **Ollama**, or honest "no provider" messaging. A3THER never fakes a working AI.
+
+### Adding the YouTube credential (one time)
+
+```bash
+# 1. Google Cloud console → create a project → enable YouTube Data API v3
+# 2. Create OAuth credentials → type "Desktop app" → download the JSON
+# 3. Save it as config/client_secrets.json
+cp ~/Downloads/client_secret_*.json config/client_secrets.json
+```
+
+Then in the app: **Settings → YouTube → Connect YouTube** — your default browser
+opens at the Google sign-in, you approve, and the loopback redirect completes
+the link automatically (no copy-paste). A manual "code" fallback is also
+available if your OAuth client type requires it.
+
+> 🔒 **Security guarantees** — every file above is in `.gitignore` and is
+> **never committed or pushed**. The app stores runtime tokens (YouTube refresh
+> token, memory, approvals) under `%LOCALAPPDATA%\A3THER\`, not in the repo.
+> If you ever paste a key into a chat or log, revoke it in the provider console
+> and generate a fresh one.
+
+---
+
 ## 🎮 Using A.3.T.H.E.R.
 
 ### Global hotkeys (work in any app, even in the background)
