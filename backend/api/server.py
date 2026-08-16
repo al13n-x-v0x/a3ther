@@ -210,6 +210,14 @@ def HUDJs():
     return FileResponse(str(asset), media_type="application/javascript") if asset.exists() else JSONResponse({"error": "not found"}, status_code=404)
 
 
+@app.get("/assets/{name}")
+def Assets(name: str):
+    """HUD assets (logo, icons, media) — path-traversal safe."""
+    asset = FRONTEND_DIR / "assets" / Path(name).name
+    if asset.exists():
+        return FileResponse(str(asset))
+    return JSONResponse({"error": "not found"}, status_code=404)
+
 
 @app.get("/api/time")
 def TimeNow():

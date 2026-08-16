@@ -215,11 +215,20 @@ input { border: none; outline: none; background: none; color: #fff; font-family:
   border-radius: 50%;
   display: grid;
   place-items: center;
+  overflow: hidden;
   background: radial-gradient(circle at 32% 28%, #7CE6FF, var(--cyan) 35%, var(--cyan-dark) 90%);
   box-shadow: 0 0 28px rgba(0, 210, 255, .65), inset 0 0 14px rgba(255, 255, 255, .25);
   border: 1px solid rgba(255, 255, 255, .35);
 }
+#logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
 #logo span {
+  display: none;
   font-family: "Orbitron", sans-serif;
   font-size: 30px;
   font-weight: 800;
@@ -618,6 +627,16 @@ input { border: none; outline: none; background: none; color: #fff; font-family:
   text-align: center;
   pointer-events: none;
   z-index: 2;
+}
+.globe-core-label img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  box-shadow: 0 0 34px rgba(0, 210, 255, .75), inset 0 0 18px rgba(255, 255, 255, .2);
 }
 .globe-core-label span {
   display: block;

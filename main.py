@@ -446,6 +446,8 @@ async def amain(args: argparse.Namespace) -> int:
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            # Never flash a console window for the window host (dev/python mode).
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         )
         # Drain the child's output into our terminal log (it also re-points
         # its own stdout there, but belt-and-braces).

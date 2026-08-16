@@ -55,6 +55,7 @@ datas = [
     ("Frontend/plugins.css", "Frontend"),
     ("Frontend/hub.html", "Frontend"),
     ("Frontend/hub.js", "Frontend"),
+    ("Frontend/assets/logo.png", "Frontend/assets"),
     ("config/api_keys.template.json", "config"),
 ]
 

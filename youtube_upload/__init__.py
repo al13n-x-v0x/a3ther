@@ -134,15 +134,33 @@ def connect_status() -> dict:
     }
 
 
+def _flow():
+    """Build an InstalledAppFlow with the registered redirect URI applied.
+
+    google-auth-oauthlib >= 1.x does NOT populate ``flow.redirect_uri`` from
+    the client_secrets ``redirect_uris`` list — it stays None unless passed
+    explicitly, and ``authorization_url()`` then omits the parameter entirely,
+    which Google rejects with "Error 400: invalid_request — Missing required
+    parameter: redirect_uri". Pinning it to the registered loopback URI fixes
+    both the manual and browser flows.
+    """
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        str(_client_secrets_path()), _SCOPES
+    )
+    uris = flow.client_config.get("installed", {}).get("redirect_uris") or ["http://localhost"]
+    flow.redirect_uri = uris[0]
+    return flow
+
+
 def get_auth_url() -> dict:
     """Return the consent URL to open in the browser (no approval needed)."""
     secrets = _client_secrets_path()
     if not secrets.exists():
         return {"ok": False, "error": connect_status()["setup_steps"]}
     try:
-        from google_auth_oauthlib.flow import InstalledAppFlow
-
-        flow = InstalledAppFlow.from_client_secrets_file(str(secrets), _SCOPES)
+        flow = _flow()
         url, _ = flow.authorization_url(access_type="offline", prompt="consent")
         return {"ok": True, "url": url, "note": "open the URL, approve, then paste the code back"}
     except Exception as exc:  # noqa: BLE001
@@ -195,11 +213,7 @@ def browser_auth_start() -> dict:
 def _browser_auth_worker() -> None:
     """Blocking worker: run_local_server opens the browser + loopback listener."""
     try:
-        from google_auth_oauthlib.flow import InstalledAppFlow
-
-        flow = InstalledAppFlow.from_client_secrets_file(
-            str(_client_secrets_path()), _SCOPES
-        )
+        flow = _flow()
         # port=0 → random free loopback port; prompt=consent → refresh token always.
         creds = flow.run_local_server(port=0, prompt="consent", open_browser=True)
         result = _save_creds(creds)
@@ -216,9 +230,7 @@ def exchange_code(code: str) -> dict:
     if not secrets.exists():
         return {"ok": False, "error": connect_status()["setup_steps"]}
     try:
-        from google_auth_oauthlib.flow import InstalledAppFlow
-
-        flow = InstalledAppFlow.from_client_secrets_file(str(secrets), _SCOPES)
+        flow = _flow()
         flow.fetch_token(code=code.strip())
         return _save_creds(flow.credentials)
     except Exception as exc:  # noqa: BLE001
