@@ -1116,6 +1116,41 @@
         </div>
 
         <div class="settings-section">
+          <h4>GOOGLE DRIVE — BACKUPS + CLOUD</h4>
+          <p class="settings-note" id="set-drive-status">Connect your Google account (same client secrets as YouTube) and A3THER can list, upload, download and back up your files.</p>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-drive-connect"><i class="fa-solid fa-cloud"></i> Connect Drive</button>
+            <button class="settings-btn" id="set-drive-manual"><i class="fa-solid fa-key"></i> Manual Code</button>
+            <button class="settings-btn" id="set-drive-list"><i class="fa-solid fa-folder-open"></i> List Files</button>
+            <button class="settings-btn" id="set-drive-refresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <button class="settings-btn" id="set-drive-disconnect"><i class="fa-solid fa-unlink"></i> Disconnect</button>
+          </div>
+          <div class="settings-row">
+            <label>Back up a folder<small>local folder path (or leave empty for your rendered videos)</small></label>
+            <input class="settings-text-input" id="set-drive-backup-dir" type="text" placeholder="e.g. C:/Users/Admin/Videos/A3THER" />
+          </div>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-drive-backup"><i class="fa-solid fa-cloud-arrow-up"></i> Back Up Folder</button>
+          </div>
+          <div class="yt-approvals" id="set-drive-files"></div>
+        </div>
+
+        <div class="settings-section">
+          <h4>COMPOSIO — 250+ APP INTEGRATIONS</h4>
+          <p class="settings-note" id="set-composio-status">Connect Gmail, GitHub, Slack, Notion and hundreds more apps. Paste your Composio API key (composio.dev — free) and hit save, then add apps — each one becomes a live MCP server A3THER can voice-drive.</p>
+          <div class="settings-row">
+            <label>Composio API key<small>stored in the A3THER data folder — never in the repo</small></label>
+            <input class="settings-text-input" id="set-composio-key" type="password" placeholder="paste your Composio API key…" autocomplete="off" />
+          </div>
+          <div class="settings-grid">
+            <button class="settings-btn" id="set-composio-save"><i class="fa-solid fa-key"></i> Save Key</button>
+            <button class="settings-btn" id="set-composio-check"><i class="fa-solid fa-shield-halved"></i> Check Connection</button>
+          </div>
+          <p class="settings-note">One-click app connect:</p>
+          <div class="settings-grid" id="set-composio-apps"></div>
+        </div>
+
+        <div class="settings-section">
           <h4>ENVIRONMENT</h4>
           <div class="settings-row">
             <label>Weather city<small>pin a city, or leave empty for auto-detect</small></label>
@@ -1477,6 +1512,108 @@
         });
         ytRefresh.addEventListener("click", loadYt);
         loadYt();
+      }
+
+      // google drive — connect, list, upload, backup
+      const driveStatus = body.querySelector("#set-drive-status");
+      const driveFiles = body.querySelector("#set-drive-files");
+      const driveBackupDir = body.querySelector("#set-drive-backup-dir");
+      const loadDrive = async () => {
+        const s = await API.get("/api/drive/status");
+        if (!s) return;
+        const b = s.backup || {};
+        driveStatus.innerHTML = s.linked
+          ? `<span class="ok">✓ Google Drive linked${s.account ? " — " + this.esc(s.account) : ""}.` + (b.state === "running" ? ` <i class="fa-solid fa-spinner fa-spin"></i> Backup: ${b.done}/${b.total} files` : b.state === "done" ? ` Backup done — ${b.total} files.` : b.state === "error" ? ` <span class="err">✘ backup error: ${this.esc(b.error)}</span>` : "") + `</span>`
+          : (s.auth_in_progress
+            ? `<span class="ok"><i class="fa-solid fa-spinner fa-spin"></i> Sign-in in progress — check your browser.</span>`
+            : (s.setup_needed ? `✘ ${this.esc(s.setup_steps)}` : "Not linked yet — hit Connect Drive."));
+      };
+      if (body.querySelector("#set-drive-connect")) {
+        body.querySelector("#set-drive-connect").addEventListener("click", async () => {
+          const s = await API.get("/api/drive/status");
+          if (!s) { Toasts.err("backend offline"); return; }
+          if (s.linked) { Toasts.ok("Google Drive already linked."); loadDrive(); return; }
+          if (s.auth_in_progress) { Toasts.warn("Sign-in already in progress — check your browser."); return; }
+          const r = await API.post("/api/drive/auth/browser", {});
+          if (!r || !r.ok) { Toasts.err((r && r.error) || "could not start sign-in"); return; }
+          Toasts.ok("Opened your browser — sign in and approve.");
+          driveStatus.innerHTML = `<span class="ok"><i class="fa-solid fa-spinner fa-spin"></i> Waiting for your Google sign-in…</span>`;
+          const t0 = Date.now();
+          const poll = setInterval(async () => {
+            const st = await API.get("/api/drive/status");
+            if (!st) { clearInterval(poll); return; }
+            if (st.linked) { clearInterval(poll); Toasts.ok("Google Drive linked!"); loadDrive(); return; }
+            if (st.auth_state === "error") { clearInterval(poll); Toasts.err(st.auth_error || "sign-in failed — try again"); loadDrive(); return; }
+            if (Date.now() - t0 > 300000) { clearInterval(poll); Toasts.warn("Sign-in timed out (5 min) — click Connect Drive to retry."); loadDrive(); return; }
+          }, 2500);
+        });
+        body.querySelector("#set-drive-manual").addEventListener("click", async () => {
+          const u = await API.get("/api/drive/auth-url");
+          if (!u || !u.ok) { Toasts.err((u && u.error) || "no client_secrets.json — follow the setup steps"); return; }
+          window.open(u.url, "_blank");
+          const code = window.prompt("Sign in + approve in the browser that opened, then paste the code here:");
+          if (!code) return;
+          const r = await API.post("/api/drive/auth-code", { code });
+          if (r && r.ok) { Toasts.ok("Google Drive linked!"); } else { Toasts.err((r && r.error) || "link failed"); }
+          loadDrive();
+        });
+        body.querySelector("#set-drive-disconnect").addEventListener("click", async () => {
+          const r = await API.post("/api/drive/disconnect", {});
+          Toasts.ok(r && r.ok ? "Google Drive disconnected." : (r && r.error) || "disconnect failed");
+          loadDrive();
+        });
+        body.querySelector("#set-drive-list").addEventListener("click", async () => {
+          const r = await API.get("/api/drive/list?limit=15");
+          if (!r || !r.ok) { Toasts.err((r && r.error) || "listing failed"); return; }
+          const files = r.files || [];
+          driveFiles.innerHTML = files.length
+            ? files.map((f) => `<div class="yt-approval"><strong>${this.esc(f.name)}</strong> <em>${f.folder ? "FOLDER" : (f.size_mb + " MB")}</em><small>${this.esc(String(f.modified || "")).slice(0, 16)}</small></div>`).join("")
+            : "<small>Nothing found (Drive looks empty, or only A3THER's own files are visible).</small>";
+          Toasts.ok(`${files.length} file${files.length === 1 ? "" : "s"} listed.`);
+        });
+        body.querySelector("#set-drive-backup").addEventListener("click", async () => {
+          const dir = (driveBackupDir.value || "").trim();
+          const r = await API.post("/api/drive/backup", { source_dir: dir });
+          if (r && r.ok) { Toasts.ok(`Backup started — ${r.files} files!`); loadDrive(); }
+          else Toasts.err((r && r.error) || "backup didn't start");
+        });
+        body.querySelector("#set-drive-refresh").addEventListener("click", loadDrive);
+        loadDrive();
+      }
+
+      // composio — key save, connection check, one-click app connect
+      const composioStatus = body.querySelector("#set-composio-status");
+      const composioApps = body.querySelector("#set-composio-apps");
+      const composioKeyInput = body.querySelector("#set-composio-key");
+      const loadComposio = async () => {
+        const s = await API.get("/api/composio/status");
+        if (!s) return;
+        composioStatus.innerHTML = s.configured
+          ? (s.reachable
+            ? `<span class="ok">✓ Composio connected — ${s.tools_total || "many"} tools available.</span>`
+            : `<span class="err">✘ ${this.esc(s.error || "API unreachable")}</span>`)
+          : `✘ ${this.esc(s.error || "Composio isn't configured")}`;
+        const m = await API.get("/api/composio/mcp");
+        if (composioApps && m && m.apps) {
+          composioApps.innerHTML = m.apps.map((a) =>
+            `<button class="settings-btn composio-app" data-app="${a.name.replace("composio-", "")}"><i class="fa-solid fa-plug"></i> ${this.esc(a.name.replace("composio-", "").toUpperCase())}</button>`).join("");
+          composioApps.querySelectorAll(".composio-app").forEach((b) => b.addEventListener("click", async () => {
+            const r = await API.post("/api/composio/mcp/add", { app: b.dataset.app });
+            if (r && r.ok) { Toasts.ok(`${b.dataset.app} connected — live in Extensions!`); }
+            else Toasts.err((r && r.error) || "could not connect app");
+          }));
+        }
+      };
+      if (composioStatus) {
+        body.querySelector("#set-composio-save").addEventListener("click", async () => {
+          const key = (composioKeyInput.value || "").trim();
+          if (!key) { Toasts.warn("Paste your Composio API key first."); return; }
+          const r = await API.post("/api/composio/key", { key });
+          if (r && r.ok) { Toasts.ok("Composio key saved."); loadComposio(); }
+          else Toasts.err((r && r.error) || "could not save key");
+        });
+        body.querySelector("#set-composio-check").addEventListener("click", loadComposio);
+        loadComposio();
       }
 
       // weather city override → persisted server-side

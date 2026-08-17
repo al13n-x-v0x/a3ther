@@ -195,6 +195,36 @@
       "env": {},
       "enabled": false,
       "description": "Bluetooth Low Energy MCP — scan, connect, read/write, subscribe (bleak). Source: github.com/es617/ble-mcp-server"
+    },
+    {
+      "name": "composio-gmail",
+      "transport": "http",
+      "url": "https://mcp.composio.dev/gmail",
+      "headers": {
+        "x-api-key": "{{COMPOSIO_API_KEY}}"
+      },
+      "enabled": false,
+      "description": "Composio app — Gmail (read/send mail). Set COMPOSIO_API_KEY, then enable from the Plugins dashboard or Settings → Composio."
+    },
+    {
+      "name": "composio-github",
+      "transport": "http",
+      "url": "https://mcp.composio.dev/github",
+      "headers": {
+        "x-api-key": "{{COMPOSIO_API_KEY}}"
+      },
+      "enabled": false,
+      "description": "Composio app — GitHub (repos, issues, PRs). Set COMPOSIO_API_KEY, then enable from the Plugins dashboard or Settings → Composio."
+    },
+    {
+      "name": "composio-slack",
+      "transport": "http",
+      "url": "https://mcp.composio.dev/slack",
+      "headers": {
+        "x-api-key": "{{COMPOSIO_API_KEY}}"
+      },
+      "enabled": false,
+      "description": "Composio app — Slack (channels, messages). Set COMPOSIO_API_KEY, then enable from the Plugins dashboard or Settings → Composio."
     }
   ]
 }

@@ -228,6 +228,215 @@ def youtube_bot_stop():
 
 
 # ------------------------------------------------------------------------- #
+# Google Drive (connect → list → upload → download → backup)
+# ------------------------------------------------------------------------- #
+@features_router.get("/drive/status")
+def drive_status():
+    try:
+        from google_drive import backup_status, connect_status
+
+        return {**connect_status(), **{"backup": backup_status()}}
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.get("/drive/auth-url")
+def drive_auth_url():
+    try:
+        from google_drive import get_auth_url
+
+        return get_auth_url()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/auth/browser")
+def drive_auth_browser():
+    """One-click Google sign-in for Drive (browser opens, loopback auto-completes)."""
+    try:
+        from google_drive import browser_auth_start
+
+        return browser_auth_start()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/auth-code")
+def drive_auth_code(body: YoutubeAuthCodeRequest):
+    try:
+        from google_drive import exchange_code
+
+        return exchange_code(body.code)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/disconnect")
+def drive_disconnect():
+    try:
+        from google_drive import disconnect
+
+        return disconnect()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+class DriveListRequest(BaseModel):
+    query: str = ""
+    limit: int = 50
+
+
+class DriveUploadRequest(BaseModel):
+    path: str
+    folder_id: str | None = None
+    name: str | None = None
+
+
+class DriveDownloadRequest(BaseModel):
+    file_id: str
+    dest_dir: str | None = None
+
+
+class DriveBackupRequest(BaseModel):
+    source_dir: str
+    folder_name: str | None = None
+
+
+@features_router.get("/drive/list")
+def drive_list(query: str = "", limit: int = 50):
+    try:
+        from google_drive import list_files
+
+        return list_files(query, limit)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/upload")
+def drive_upload(body: DriveUploadRequest):
+    try:
+        from google_drive import upload_file
+
+        return upload_file(body.path, body.folder_id, body.name)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/download")
+def drive_download(body: DriveDownloadRequest):
+    try:
+        from google_drive import download_file
+
+        return download_file(body.file_id, body.dest_dir)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.post("/drive/backup")
+def drive_backup(body: DriveBackupRequest):
+    """Mirror a local folder into a dated Drive folder (background thread)."""
+    try:
+        from google_drive import backup_folder
+
+        return backup_folder(body.source_dir, body.folder_name)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.get("/drive/backup-status")
+def drive_backup_status():
+    try:
+        from google_drive import backup_status
+
+        return backup_status()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+# ------------------------------------------------------------------------- #
+# Composio (250+ app integrations via REST + MCP apps)
+# ------------------------------------------------------------------------- #
+class ComposioKeyRequest(BaseModel):
+    key: str
+
+
+@features_router.post("/composio/key")
+def composio_key(body: ComposioKeyRequest):
+    """Persist the Composio API key (config/api_keys.json — never the repo)."""
+    try:
+        from config import save_config
+
+        key = (body.key or "").strip()
+        if not key:
+            return {"ok": False, "error": "key cannot be empty"}
+        save_config({"composio_api_key": key})
+        return {"ok": True, "configured": True}
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.get("/composio/status")
+def composio_status():
+    try:
+        from composio_bridge import status
+
+        return status()
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.get("/composio/tools")
+def composio_tools(limit: int = 25):
+    try:
+        from composio_bridge import list_tools
+
+        return list_tools(limit)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+class ComposioExecuteRequest(BaseModel):
+    action: str
+    params: dict = {}
+
+
+@features_router.post("/composio/execute")
+def composio_execute(body: ComposioExecuteRequest):
+    try:
+        from composio_bridge import execute
+
+        return execute(body.action, body.params)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+@features_router.get("/composio/mcp")
+def composio_mcp_servers():
+    """The one-click MCP app entries (Gmail, GitHub, Slack, …)."""
+    try:
+        from composio_bridge import mcp_servers
+
+        return {"apps": mcp_servers()}
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+class ComposioMcpRequest(BaseModel):
+    app: str
+
+
+@features_router.post("/composio/mcp/add")
+def composio_mcp_add(body: ComposioMcpRequest):
+    """Add one Composio app as a hot-loaded MCP server (Extensions tab / voice)."""
+    try:
+        from composio_bridge import add_mcp_app
+
+        return add_mcp_app(body.app)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+# ------------------------------------------------------------------------- #
 # Voice
 # ------------------------------------------------------------------------- #
 @features_router.get("/voice/status")

@@ -142,6 +142,8 @@ and they stay on your machine. Nothing is baked into the exe or the repo.
 |---------|---------------|----------------|-------------|
 | **LLM providers** (Gemini, OpenAI, DeepSeek, Groq, Anthropic) | API key | `config/api_keys.json`, or **env-first**: `A3THER_GEMINI_API_KEY`, `A3THER_OPENAI_API_KEY`, `A3THER_DEEPSEEK_API_KEY`, `A3THER_GROQ_API_KEY`, `A3THER_ANTHROPIC_API_KEY` | ✅ |
 | **YouTube** (upload, publish, auto-reply bot) | Google Cloud OAuth **desktop** client (`client_secrets.json`, YouTube Data API v3 enabled) | `config/client_secrets.json` — the app opens your browser for a one-click Google sign-in and stores the refresh token under `%LOCALAPPDATA%\A3THER\youtube\` | ✅ |
+| **Google Drive** (list, upload, download, folder backups) | The *same* `client_secrets.json` (enable the Google Drive API in the same project) | refresh token under `%LOCALAPPDATA%\A3THER\drive\`; one-click browser sign-in from Settings → Google Drive | ✅ |
+| **Composio** (250+ app integrations: Gmail, GitHub, Slack, Notion, …) | `COMPOSIO_API_KEY` (env-first) or `config/api_keys.json` → `composio_api_key` — free at composio.dev | apps added as live MCP servers (`https://mcp.composio.dev/{app}`) into `mcp-servers.json` | ✅ |
 | **SSH / Remote Dev** | Host, user, key path per server | `config/servers.json` (or environment variables) | ✅ |
 | **MCP servers** | Your own `mcp-servers.json` with stdio/HTTP server entries | repo root `mcp-servers.json` | ✅ |
 | **Phone / device control** | ADB or a paired companion (APK) | `%LOCALAPPDATA%\A3THER\` | ✅ |
@@ -166,11 +168,29 @@ opens at the Google sign-in, you approve, and the loopback redirect completes
 the link automatically (no copy-paste). A manual "code" fallback is also
 available if your OAuth client type requires it.
 
+### Google Drive + Composio (one-time)
+
+**Google Drive** reuses your YouTube credential — just enable the *Google Drive
+API* in the same Cloud project (console.cloud.google.com → APIs & Services →
+Enable APIs → "Google Drive API"). Then **Settings → Google Drive → Connect
+Drive**: the same one-click browser sign-in links it, and you can list files,
+upload any local file (rendered edits, screenshots), download, or back up a
+whole folder to a dated `A3THER Backup` Drive folder on a background thread.
+Voice: *"back up my videos to google drive"*, *"upload the latest edit"*,
+*"what's in my google drive"*.
+
+**Composio** (composio.dev) plugs A3THER into 250+ apps — Gmail, GitHub,
+Slack, Notion, Google Sheets, WhatsApp, Spotify and more. Paste a free API key
+in **Settings → Composio**, then one-click add apps: each one is registered as
+a live MCP server (`https://mcp.composio.dev/{app}`) that the voice brain and
+the Extensions dashboard can drive. Voice: *"add gmail to composio"*,
+*"check composio"*.
+
 > 🔒 **Security guarantees** — every file above is in `.gitignore` and is
 > **never committed or pushed**. The app stores runtime tokens (YouTube refresh
-> token, memory, approvals) under `%LOCALAPPDATA%\A3THER\`, not in the repo.
-> If you ever paste a key into a chat or log, revoke it in the provider console
-> and generate a fresh one.
+> token, Drive refresh token, memory, approvals) under `%LOCALAPPDATA%\A3THER\`,
+> not in the repo. If you ever paste a key into a chat or log, revoke it in the
+> provider console and generate a fresh one.
 
 ---
 

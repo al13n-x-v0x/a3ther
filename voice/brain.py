@@ -25,6 +25,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+from pathlib import Path
 
 LOGGER = logging.getLogger("a3ther.voice.brain")
 
@@ -154,6 +155,95 @@ def _topic_match(m: re.Match) -> dict:
     return _p(topic=rest[:200])
 
 
+def _drive_upload_match(m: re.Match) -> dict:
+    """'upload the latest edit to google drive' → file = 'the latest edit'.
+
+    Falls back to the newest rendered video when the phrase is generic
+    ('upload my latest video to drive').
+    """
+    text = m.string
+    match = re.search(r"\bupload\b(.*?)\bto (?:google )?drive\b", text, flags=re.IGNORECASE)
+    file_part = (match.group(1) if match else "").strip(" .?!,;")
+    file_part = re.sub(r"\b(please|now|asap|right now)\b.*$", "", file_part, flags=re.IGNORECASE).strip()
+    # Strip stacked prefixes ('my newest edit' → 'edit'): ^ anchors mean one
+    # re.sub pass only removes one layer, so loop until stable.
+    for _ in range(4):
+        stripped = re.sub(r"^(?:the |my |a |an |latest |newest |most recent )", "", file_part)
+        if stripped == file_part:
+            break
+        file_part = stripped
+    if not file_part or file_part in ("edit", "video", "clip", "file", "rendering"):
+        # Generic request → newest rendered edit.
+        try:
+            from video_editor.engine import list_videos
+
+            videos = list_videos()
+            if videos:
+                file_part = videos[0]["name"]
+        except Exception:  # noqa: BLE001
+            pass
+    return _p(file=file_part[:240])
+
+
+_DRIVE_FOLDER_MAP = {
+    "videos": (Path.home() / "Videos" / "A3THER", Path("Output/videos").resolve()),
+    "video": (Path.home() / "Videos" / "A3THER", Path("Output/videos").resolve()),
+    "edits": (Path.home() / "Videos" / "A3THER", Path("Output/videos").resolve()),
+    "output": (Path("Output").resolve(),),
+    "outputs": (Path("Output").resolve(),),
+    "websites": (Path("Output/websites").resolve(),),
+    "sites": (Path("Output/websites").resolve(),),
+    "screenshots": (Path("Output/screenshots").resolve(),),
+}
+
+
+def _drive_backup_match(m: re.Match) -> dict:
+    """'back up my videos to google drive' → folder = the videos output dir.
+
+    Resolves real A3THER output folders for common words (videos, edits,
+    websites, screenshots) and falls back to a literal path when one is
+    given ('back up C:/Users/me/Documents').
+    """
+    text = m.string
+    match = re.search(r"\b(?:back[ -]?up|backup)\b(.*?)\bto (?:google )?drive\b", text, flags=re.IGNORECASE)
+    folder = (match.group(1) if match else "").strip(" .?!,;")
+    folder = re.sub(r"\b(please|now|asap|right now)\b.*$", "", folder, flags=re.IGNORECASE).strip()
+    # Strip stacked prefixes ('everything in my videos' → 'videos').
+    for _ in range(4):
+        stripped = re.sub(r"^(?:my |the |all |everything(?: in)? |entire |folder |directory )", "", folder)
+        if stripped == folder:
+            break
+        folder = stripped
+    key = folder.lower().rstrip("s")
+    if key in _DRIVE_FOLDER_MAP:
+        for cand in _DRIVE_FOLDER_MAP[key]:
+            if cand.is_dir():
+                return _p(folder=str(cand))
+    if folder and (folder.startswith(("/", "\\", "~"), ) or ":" in folder):
+        return _p(folder=folder[:240])
+    # Generic → the A3THER videos output.
+    for cand in _DRIVE_FOLDER_MAP["videos"]:
+        if cand.is_dir():
+            return _p(folder=str(cand))
+    return _p(folder=folder[:240])
+
+
+def _composio_app_match(m: re.Match) -> dict:
+    """'add gmail to composio' → app = 'gmail' (any of the popular apps)."""
+    text = m.string
+    try:
+        from composio_bridge import POPULAR_APPS
+
+        apps = [a for a, _ in POPULAR_APPS]
+        lowered = text.lower()
+        for app in apps:
+            if re.search(rf"\b{re.escape(app)}\b", lowered):
+                return _p(app=app)
+    except Exception:  # noqa: BLE001
+        pass
+    return _p(app="")
+
+
 # Website maker: "make me a website about …" / "build a website for …"
 _rule(r"\b(?:make|build|create|generate)\b.*\b(?:website|site|web page)\b.*\b(?:about|for|on)\b", "make_website", _topic_match)
 _rule(r"\b(?:make|build|create|generate)\b.*\b(?:website|site|web page)\b", "make_website")
@@ -174,6 +264,22 @@ _rule(r"\b(publish|upload|post)\b.*\b(it|the (?:edit|video|clip)|to youtube)\b",
 
 # Video search: "search for video clips about X" (download + cut via edit_video).
 _rule(r"\b(search|find)\b.*\b(video clips?|clips?|videos?)\b.*\b(about|for|of)\b", "search_video", _topic_match)
+
+# -- Google Drive ----------------------------------------------------------- #
+# "check my google drive" / "connect google drive"
+_rule(r"\b(check|how(?:'s| is)|status of|link|connect)\b.*\b(google )?drive\b", "drive_status")
+# "what's in my google drive" / "list my drive files"
+_rule(r"\bwhat(?:'s| is) (?:in|on) my (?:google )?drive\b|\blist .*\bdrive\b", "drive_list")
+# "upload <file> to google drive"
+_rule(r"\bupload\b.*\b(?:google )?drive\b", "drive_upload", _drive_upload_match)
+# "back up my videos to google drive" / "backup the output folder"
+_rule(r"\b(back[ -]?up|backup)\b.*\b(?:google )?drive\b", "drive_backup", _drive_backup_match)
+
+# -- Composio (250+ app integrations) ---------------------------------------- #
+# "check composio" / "what apps are connected"
+_rule(r"\b(check|status of|what)\b.*\bcomposio\b", "composio_status")
+# "add gmail to composio" / "connect github via composio"
+_rule(r"\b(add|connect|enable)\b.*\b(composio|(?:the )?app[s]?)\b", "composio_add", _composio_app_match)
 
 # -- plain conversational answers (no broadcast needed) ---------------------- #
 _rule(r"\bwhat time is it\b|\bcurrent time\b|\btime now\b", "__time__")
@@ -404,6 +510,83 @@ def _local_feature(command: str, params: dict) -> str | None:
                 f"{top.get('title', 'untitled')} — {top.get('duration_str') or 'short'}. "
                 f"Say 'make a tiktok edit about {topic}' and I'll cut them into an edit."
             )
+
+        if command == "drive_status":
+            from google_drive import connect_status
+
+            status = connect_status()
+            if status.get("linked"):
+                acc = status.get("account") or "your account"
+                return (
+                    f"Google Drive is connected — {acc}. Say 'back up my "
+                    "videos' and I'll mirror them to a Drive folder."
+                )
+            if status.get("setup_needed"):
+                return (
+                    "Google Drive isn't linked yet. Your existing YouTube "
+                    "client secrets already cover it — hit Connect Drive in Settings."
+                )
+            return "Google Drive isn't linked. Connect it in Settings → Google Drive."
+
+        if command == "drive_list":
+            from google_drive import list_files
+
+            res = list_files("", 10)
+            if not res.get("ok"):
+                return f"Sorry, the drive listing failed: {res.get('error')}"
+            files = res.get("files") or []
+            if not files:
+                return (
+                    "Your Google Drive looks empty — or only A3THER's own files "
+                    "are visible with the current permissions."
+                )
+            names = ", ".join(f.get("name", "?") for f in files[:6])
+            return f"I can see {len(files)} files. The newest: {names}."
+
+        if command == "drive_upload":
+            from google_drive import upload_file
+
+            res = upload_file(params.get("file") or "")
+            if res.get("ok"):
+                return f"Uploaded {res['file'].get('name')} to Google Drive."
+            return f"Sorry, the upload failed: {res.get('error')}"
+
+        if command == "drive_backup":
+            from google_drive import backup_folder
+
+            res = backup_folder(params.get("folder") or "")
+            if res.get("ok"):
+                return (
+                    f"Backup started — {res['files']} files are copying to "
+                    "Google Drive now. I'll report when it's done."
+                )
+            return f"Sorry, the backup didn't start: {res.get('error')}"
+
+        if command == "composio_status":
+            from composio_bridge import status
+
+            st = status()
+            if st.get("configured") and st.get("reachable"):
+                return (
+                    f"Composio is connected — {st.get('tools_total', 'many')} "
+                    "tools available. Say 'add gmail to composio' to hook up an app."
+                )
+            return st.get("error") or "Composio isn't configured yet."
+
+        if command == "composio_add":
+            from composio_bridge import add_mcp_app
+
+            app = (params.get("app") or "").strip()
+            if not app:
+                return (
+                    "Which app? I can add gmail, github, slack, googlecalendar, "
+                    "googlesheets, notion, whatsapp, spotify, discord, telegram, "
+                    "youtube, twilio, reddit, linear, asana, hubspot, figma or medium."
+                )
+            res = add_mcp_app(app)
+            if res.get("ok"):
+                return f"{app} is connected — its tools are live in the Extensions tab now."
+            return f"Sorry, I couldn't add {app}: {res.get('error')}"
     except Exception as exc:  # noqa: BLE001
         LOGGER.exception("Local feature '%s' failed", command)
         return f"Sorry, {command.replace('_', ' ')} failed: {type(exc).__name__}: {exc}"
@@ -486,6 +669,12 @@ Available commands:
 - publish_video              queue the latest rendered edit for YouTube upload
                             (AI title/description/tags, waits for approval)
 - search_video topic=<vibe>  find the best short video clips for a vibe
+- drive_status                report Google Drive connection state
+- drive_list                  list recent files in Google Drive
+- drive_upload file=<path>    upload a local file to Google Drive
+- drive_backup folder=<path>  back up a local folder to Google Drive
+- composio_status             report Composio app-integration state
+- composio_add app=<name>     connect a Composio app (gmail, github, slack, ...)
 - mcp_tool tool=<server__tool> arg=value    call a connected MCP tool
   (e.g. tool=filesystem__read_file path=C:/notes.txt). A live list of
   connectable tools is appended below when any MCP server is connected.
